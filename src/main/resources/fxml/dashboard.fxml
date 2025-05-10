@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.DashboardController"
+      styleClass="content-area"
+      spacing="20">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Дашборд" styleClass="section-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Обновить" onAction="#refreshDashboard"/>
+    </HBox>
+
+    <GridPane hgap="20" vgap="20">
+        <!-- Статистика продаж -->
+        <VBox styleClass="card" GridPane.columnIndex="0" GridPane.rowIndex="0">
+            <Label text="Общая выручка" styleClass="card-title"/>
+            <Label fx:id="totalSalesLabel" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Количество проданных автомобилей -->
+        <VBox styleClass="card" GridPane.columnIndex="1" GridPane.rowIndex="0">
+            <Label text="Проданные автомобили" styleClass="card-title"/>
+            <Label fx:id="carsSoldLabel" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Доступные автомобили -->
+        <VBox styleClass="card" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <Label text="Доступные автомобили" styleClass="card-title"/>
+            <Label fx:id="availableCarsLabel" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Активные сделки -->
+        <VBox styleClass="card" GridPane.columnIndex="3" GridPane.rowIndex="0">
+            <Label text="Активные сделки" styleClass="card-title"/>
+            <Label fx:id="activeDealsLabel" styleClass="card-value"/>
+        </VBox>
+    </GridPane>
+
+    <!-- Последние сделки -->
+    <VBox spacing="10">
+        <Label text="Последние сделки" styleClass="section-title"/>
+        <TableView fx:id="recentDealsTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="dealIdColumn" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="customerColumn" text="Клиент" prefWidth="200"/>
+                <TableColumn fx:id="carColumn" text="Автомобиль" prefWidth="200"/>
+                <TableColumn fx:id="amountColumn" text="Сумма" prefWidth="100"/>
+                <TableColumn fx:id="statusColumn" text="Статус" prefWidth="150"/>
+                <TableColumn fx:id="dateColumn" text="Дата" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- График продаж -->
+    <VBox spacing="10">
+        <Label text="График продаж" styleClass="section-title"/>
+        <LineChart fx:id="salesChart" VBox.vgrow="ALWAYS">
+            <xAxis>
+                <CategoryAxis label="Месяц"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="Продажи"/>
+            </yAxis>
+        </LineChart>
+    </VBox>
+</VBox> 

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.DealsController"
+      spacing="20">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Фильтры и поиск -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Search deals..." prefWidth="300"/>
+        <ComboBox fx:id="statusFilter" promptText="Status"/>
+        <DatePicker fx:id="startDate" promptText="Start Date"/>
+        <DatePicker fx:id="endDate" promptText="End Date"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="New Deal" onAction="#showNewDealDialog" styleClass="action-button"/>
+    </HBox>
+
+    <!-- Статистика сделок -->
+    <HBox spacing="20">
+        <VBox styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Total Deals" styleClass="card-title"/>
+            <Label fx:id="totalDealsLabel" text="0" styleClass="card-value"/>
+        </VBox>
+        
+        <VBox styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Total Revenue" styleClass="card-title"/>
+            <Label fx:id="totalRevenueLabel" text="$0" styleClass="card-value"/>
+        </VBox>
+        
+        <VBox styleClass="card" HBox.hgrow="ALWAYS">
+            <Label text="Average Deal Value" styleClass="card-title"/>
+            <Label fx:id="averageDealLabel" text="$0" styleClass="card-value"/>
+        </VBox>
+    </HBox>
+
+    <!-- Таблица сделок -->
+    <TableView fx:id="dealsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="ID" fx:id="idColumn"/>
+            <TableColumn text="Customer" fx:id="customerColumn"/>
+            <TableColumn text="Car" fx:id="carColumn"/>
+            <TableColumn text="Date" fx:id="dateColumn"/>
+            <TableColumn text="Price" fx:id="priceColumn"/>
+            <TableColumn text="Status" fx:id="statusColumn"/>
+            <TableColumn text="Actions" fx:id="actionsColumn"/>
+        </columns>
+    </TableView>
+
+    <!-- Пагинация -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Previous" onAction="#previousPage" styleClass="nav-button"/>
+        <Label fx:id="pageInfoLabel" text="Page 1 of 1"/>
+        <Button text="Next" onAction="#nextPage" styleClass="nav-button"/>
+    </HBox>
+</VBox> 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.CarsController"
+      spacing="20">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Фильтры и поиск -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="Search cars..." prefWidth="300"/>
+        <ComboBox fx:id="statusFilter" promptText="Status"/>
+        <ComboBox fx:id="brandFilter" promptText="Brand"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Add Car" onAction="#showAddCarDialog" styleClass="action-button"/>
+    </HBox>
+
+    <!-- Таблица автомобилей -->
+    <TableView fx:id="carsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="ID" fx:id="idColumn"/>
+            <TableColumn text="Brand" fx:id="brandColumn"/>
+            <TableColumn text="Model" fx:id="modelColumn"/>
+            <TableColumn text="Year" fx:id="yearColumn"/>
+            <TableColumn text="Price" fx:id="priceColumn"/>
+            <TableColumn text="Status" fx:id="statusColumn"/>
+            <TableColumn text="Actions" fx:id="actionsColumn"/>
+        </columns>
+    </TableView>
+
+    <!-- Пагинация -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Previous" onAction="#previousPage" styleClass="nav-button"/>
+        <Label fx:id="pageInfoLabel" text="Page 1 of 1"/>
+        <Button text="Next" onAction="#nextPage" styleClass="nav-button"/>
+    </HBox>
+</VBox> 

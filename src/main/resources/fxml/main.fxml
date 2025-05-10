@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.javacrm.controller.MainController"
+            stylesheets="@/styles/main.css">
+    
+    <top>
+        <HBox styleClass="header">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Car Dealership CRM" styleClass="header-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Выйти" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+    
+    <left>
+        <VBox styleClass="sidebar">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Дашборд" onAction="#showDashboard" styleClass="sidebar-button"/>
+            <Button text="Клиенты" onAction="#showCustomers" styleClass="sidebar-button"/>
+            <Button text="Автомобили" onAction="#showCars" styleClass="sidebar-button"/>
+            <Button text="Сделки" onAction="#showDeals" styleClass="sidebar-button"/>
+            <Button text="Сервис" onAction="#showService" styleClass="sidebar-button"/>
+            <Button text="Отчеты" onAction="#showReports" styleClass="sidebar-button"/>
+        </VBox>
+    </left>
+    
+    <center>
+        <StackPane fx:id="contentArea">
+            <!-- Content will be loaded dynamically -->
+        </StackPane>
+    </center>
+    
+    <bottom>
+        <HBox styleClass="footer">
+            <padding>
+                <Insets top="5" right="10" bottom="5" left="10"/>
+            </padding>
+            <Label text="© 2024 Car Dealership CRM" styleClass="footer-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="statusLabel" text="Готов к работе" styleClass="footer-text"/>
+        </HBox>
+    </bottom>
+</BorderPane> 
