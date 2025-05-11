@@ -7,38 +7,128 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.javacrm.controller.CarsController"
-      spacing="20">
-    
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+      spacing="10" padding="10">
 
-    <!-- Фильтры и поиск -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search cars..." prefWidth="300"/>
-        <ComboBox fx:id="statusFilter" promptText="Status"/>
-        <ComboBox fx:id="brandFilter" promptText="Brand"/>
+        <TextField fx:id="searchField" promptText="Поиск по VIN, марке или модели..." prefWidth="300"/>
+        <ComboBox fx:id="brandFilter" promptText="Марка" prefWidth="150"/>
+        <ComboBox fx:id="statusFilter" promptText="Статус" prefWidth="150"/>
+        <Button text="Поиск" onAction="#searchCars"/>
+        <Button text="Сбросить" onAction="#resetSearch"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Add Car" onAction="#showAddCarDialog" styleClass="action-button"/>
+        <Button text="Добавить" onAction="#showAddCarDialog"/>
     </HBox>
 
-    <!-- Таблица автомобилей -->
     <TableView fx:id="carsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn text="ID" fx:id="idColumn"/>
-            <TableColumn text="Brand" fx:id="brandColumn"/>
-            <TableColumn text="Model" fx:id="modelColumn"/>
-            <TableColumn text="Year" fx:id="yearColumn"/>
-            <TableColumn text="Price" fx:id="priceColumn"/>
-            <TableColumn text="Status" fx:id="statusColumn"/>
-            <TableColumn text="Actions" fx:id="actionsColumn"/>
+            <TableColumn fx:id="vinColumn" text="VIN" prefWidth="150"/>
+            <TableColumn fx:id="brandColumn" text="Марка" prefWidth="100"/>
+            <TableColumn fx:id="modelColumn" text="Модель" prefWidth="150"/>
+            <TableColumn fx:id="yearColumn" text="Год" prefWidth="80"/>
+            <TableColumn fx:id="colorColumn" text="Цвет" prefWidth="100"/>
+            <TableColumn fx:id="priceColumn" text="Цена" prefWidth="120"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
+            <TableColumn fx:id="mileageColumn" text="Пробег" prefWidth="100"/>
+            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="100"/>
         </columns>
     </TableView>
 
-    <!-- Пагинация -->
-    <HBox spacing="10" alignment="CENTER">
-        <Button text="Previous" onAction="#previousPage" styleClass="nav-button"/>
-        <Label fx:id="pageInfoLabel" text="Page 1 of 1"/>
-        <Button text="Next" onAction="#nextPage" styleClass="nav-button"/>
-    </HBox>
+    <Dialog fx:id="carDialog" title="Автомобиль">
+        <dialogPane>
+            <DialogPane>
+                <content>
+                    <GridPane hgap="10" vgap="10">
+                        <padding>
+                            <Insets top="20" right="20" bottom="20" left="20"/>
+                        </padding>
+
+                        <Label text="VIN:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="vinField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Марка:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="brandField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Модель:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="modelField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Год:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="yearField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Цвет:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="colorField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <Label text="Цена:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <TextField fx:id="priceField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <Label text="Тип кузова:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                        <TextField fx:id="bodyTypeField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                        <Label text="Объем двигателя:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <TextField fx:id="engineVolumeField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                        <Label text="Мощность:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                        <TextField fx:id="horsePowerField" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+                        <Label text="Пробег:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                        <TextField fx:id="mileageField" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
+                        <Label text="Статус:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="statusField" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+
+                        <Label text="Описание:" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
+                        <TextArea fx:id="descriptionField" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </content>
+                <buttonTypes>
+                    <ButtonType fx:constant="OK"/>
+                    <ButtonType fx:constant="CANCEL"/>
+                </buttonTypes>
+            </DialogPane>
+        </dialogPane>
+    </Dialog>
+</VBox> 
+                        <Label text="VIN:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="vinField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Марка:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="brandField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Модель:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="modelField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <Label text="Год:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="yearField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <Label text="Цвет:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="colorField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <Label text="Цена:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <TextField fx:id="priceField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <Label text="Тип кузова:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                        <TextField fx:id="bodyTypeField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                        <Label text="Объем двигателя:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <TextField fx:id="engineVolumeField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+                        <Label text="Мощность:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                        <TextField fx:id="horsePowerField" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+                        <Label text="Пробег:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                        <TextField fx:id="mileageField" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
+                        <Label text="Статус:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="statusField" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+
+                        <Label text="Описание:" GridPane.rowIndex="11" GridPane.columnIndex="0"/>
+                        <TextArea fx:id="descriptionField" GridPane.rowIndex="11" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </content>
+                <buttonTypes>
+                    <ButtonType fx:constant="OK"/>
+                    <ButtonType fx:constant="CANCEL"/>
+                </buttonTypes>
+            </DialogPane>
+        </dialogPane>
+    </Dialog>
 </VBox> 

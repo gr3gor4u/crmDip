@@ -54,8 +54,7 @@ public class DashboardController {
         dealIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         customerColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(
-                cellData.getValue().getCustomer().getFirstName() + " " + 
-                cellData.getValue().getCustomer().getLastName()
+                cellData.getValue().getCustomer().getFullName()
             )
         );
         carColumn.setCellValueFactory(cellData -> 

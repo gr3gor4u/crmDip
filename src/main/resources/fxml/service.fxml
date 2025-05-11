@@ -2,15 +2,39 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.javacrm.controller.ServiceController"
-      spacing="10">
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
-    
-    <Label text="Сервисный модуль" styleClass="section-title"/>
-    <Label text="В разработке..." styleClass="info-text"/>
+      stylesheets="@../styles/service.css"
+      spacing="10" padding="10">
+
+    <!-- Панель поиска и фильтров -->
+    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="hbox">
+        <TextField fx:id="searchField" promptText="Поиск..." prefWidth="200"/>
+        <ComboBox fx:id="statusFilter" promptText="Статус" prefWidth="150"/>
+        <DatePicker fx:id="startDateFilter" promptText="Дата начала"/>
+        <DatePicker fx:id="endDateFilter" promptText="Дата окончания"/>
+        <Button text="Поиск" onAction="#searchServiceRecords"/>
+        <Button text="Сбросить" onAction="#resetSearch"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Добавить запись" onAction="#showAddServiceDialog"/>
+    </HBox>
+
+    <!-- Таблица сервисных записей -->
+    <TableView fx:id="serviceTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="carColumn" text="Автомобиль" prefWidth="150"/>
+            <TableColumn fx:id="serviceTypeColumn" text="Тип сервиса" prefWidth="100"/>
+            <TableColumn fx:id="descriptionColumn" text="Описание" prefWidth="200"/>
+            <TableColumn fx:id="costColumn" text="Стоимость" prefWidth="100"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
+            <TableColumn fx:id="startDateColumn" text="Дата начала" prefWidth="150"/>
+            <TableColumn fx:id="completionDateColumn" text="Дата завершения" prefWidth="150"/>
+            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="100"/>
+        </columns>
+    </TableView>
+
 </VBox> 

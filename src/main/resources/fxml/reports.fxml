@@ -2,6 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
@@ -12,5 +13,56 @@
     </padding>
     
     <Label text="Отчеты" styleClass="section-title"/>
-    <Label text="В разработке..." styleClass="info-text"/>
+    
+    <!-- Панель фильтров -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Тип отчета:"/>
+        <ComboBox fx:id="reportTypeComboBox" prefWidth="200"/>
+        <Label text="Период:"/>
+        <DatePicker fx:id="startDatePicker"/>
+        <Label text="-"/>
+        <DatePicker fx:id="endDatePicker"/>
+    </HBox>
+    
+    <!-- Контейнер для отчетов -->
+    <VBox fx:id="reportsContainer" VBox.vgrow="ALWAYS" spacing="20">
+        <!-- Графики -->
+        <HBox spacing="20">
+            <PieChart fx:id="salesByBrandChart" title="Продажи по брендам" prefWidth="400" prefHeight="300"/>
+            <BarChart fx:id="salesByMonthChart" title="Продажи по месяцам" prefWidth="400" prefHeight="300">
+                <xAxis>
+                    <CategoryAxis label="Месяц"/>
+                </xAxis>
+                <yAxis>
+                    <NumberAxis label="Количество"/>
+                </yAxis>
+            </BarChart>
+        </HBox>
+        
+        <LineChart fx:id="revenueChart" title="Выручка по месяцам" prefWidth="800" prefHeight="300">
+            <xAxis>
+                <CategoryAxis label="Месяц"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="Сумма"/>
+            </yAxis>
+        </LineChart>
+        
+        <!-- Таблицы -->
+        <HBox spacing="20">
+            <TableView fx:id="topCustomersTable" prefWidth="400" prefHeight="300">
+                <columns>
+                    <TableColumn fx:id="customerNameColumn" text="Клиент" prefWidth="200"/>
+                    <TableColumn fx:id="customerAmountColumn" text="Сумма" prefWidth="200"/>
+                </columns>
+            </TableView>
+            
+            <TableView fx:id="topCarsTable" prefWidth="400" prefHeight="300">
+                <columns>
+                    <TableColumn fx:id="carNameColumn" text="Автомобиль" prefWidth="200"/>
+                    <TableColumn fx:id="carAmountColumn" text="Сумма" prefWidth="200"/>
+                </columns>
+            </TableView>
+        </HBox>
+    </VBox>
 </VBox> 

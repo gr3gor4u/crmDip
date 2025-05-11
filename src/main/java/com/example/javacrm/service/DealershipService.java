@@ -1,10 +1,12 @@
 package com.example.javacrm.service;
 
 import com.example.javacrm.model.Car;
+import com.example.javacrm.model.CarStatus;
 import com.example.javacrm.model.Customer;
 import com.example.javacrm.model.Deal;
-import com.example.javacrm.repository.CarRepository;
-import com.example.javacrm.repository.CustomerRepository;
+import com.example.javacrm.model.DealStatus;
+import com.example.javacrm.repository.CarDao;
+import com.example.javacrm.repository.CustomerDao;
 import com.example.javacrm.repository.DealRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,64 +20,75 @@ import java.util.stream.Collectors;
 
 @Service
 public class DealershipService {
-    private final CarRepository carRepository;
-    private final CustomerRepository customerRepository;
+    private final CarDao carDao;
+    private final CustomerDao customerDao;
     private final DealRepository dealRepository;
 
     @Autowired
-    public DealershipService(CarRepository carRepository,
-                           CustomerRepository customerRepository,
+    public DealershipService(CarDao carDao,
+                           CustomerDao customerDao,
                            DealRepository dealRepository) {
-        this.carRepository = carRepository;
-        this.customerRepository = customerRepository;
+        this.carDao = carDao;
+        this.customerDao = customerDao;
         this.dealRepository = dealRepository;
     }
 
     // Car operations
     public Car addCar(Car car) {
-        return carRepository.save(car);
+        return carDao.save(car);
     }
 
     public List<Car> getAllCars() {
-        return carRepository.findAll();
+        return carDao.findAll();
+    }
+
+    public Car getCarByVin(String vinNumber) {
+        return carDao.findByVinNumber(vinNumber).orElse(null);
+    }
+
+    public List<Car> getCarsByStatus(CarStatus status) {
+        return carDao.findAll().stream()
+                .filter(car -> car.getStatus() == status)
+                .collect(Collectors.toList());
+    }
+
+    public List<Car> getAvailableCars() {
+        return getCarsByStatus(CarStatus.AVAILABLE);
     }
 
     public Optional<Car> getCarById(Long id) {
-        return carRepository.findById(id);
-    }
-
-    public List<Car> getCarsByStatus(Car.CarStatus status) {
-        return carRepository.findByStatus(status);
+        return carDao.findById(id);
     }
 
     // Customer operations
     public Customer addCustomer(Customer customer) {
         customer.setCreatedAt(LocalDateTime.now());
-        return customerRepository.save(customer);
+        return customerDao.save(customer);
     }
 
     public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+        return customerDao.findAll();
     }
 
     public Customer getCustomerById(Long id) {
-        return customerRepository.findById(id)
+        return customerDao.findById(id)
                 .orElseThrow(() -> new RuntimeException("Клиент не найден"));
     }
 
     public Customer updateCustomer(Customer customer) {
         Customer existingCustomer = getCustomerById(customer.getId());
-        existingCustomer.setFirstName(customer.getFirstName());
-        existingCustomer.setLastName(customer.getLastName());
+        existingCustomer.setFullName(customer.getFullName());
+        existingCustomer.setBirthPlace(customer.getBirthPlace());
+        existingCustomer.setPassportData(customer.getPassportData());
         existingCustomer.setEmail(customer.getEmail());
         existingCustomer.setPhone(customer.getPhone());
         existingCustomer.setTags(customer.getTags());
         existingCustomer.setNotes(customer.getNotes());
-        return customerRepository.save(existingCustomer);
+        return customerDao.save(existingCustomer);
     }
 
     public void deleteCustomer(Long id) {
-        customerRepository.deleteById(id);
+        customerDao.findById(id).ifPresent(customerDao::delete);
     }
 
     public List<Customer> searchCustomers(String query) {
@@ -83,12 +96,11 @@ public class DealershipService {
             return getAllCustomers();
         }
         final String searchQuery = query.toLowerCase();
-        return customerRepository.findAll().stream()
+        return customerDao.findAll().stream()
                 .filter(customer -> 
-                    customer.getFirstName().toLowerCase().contains(searchQuery) ||
-                    customer.getLastName().toLowerCase().contains(searchQuery) ||
-                    customer.getEmail().toLowerCase().contains(searchQuery) ||
-                    customer.getPhone().contains(searchQuery))
+                    customer.getFullName().toLowerCase().contains(searchQuery) ||
+                    (customer.getEmail() != null && customer.getEmail().toLowerCase().contains(searchQuery)) ||
+                    (customer.getPhone() != null && customer.getPhone().contains(searchQuery)))
                 .collect(Collectors.toList());
     }
 
@@ -96,24 +108,25 @@ public class DealershipService {
         if (tag == null || tag.trim().isEmpty()) {
             return getAllCustomers();
         }
-        return customerRepository.findAll().stream()
+        return customerDao.findAll().stream()
                 .filter(customer -> customer.getTags().contains(tag))
                 .collect(Collectors.toList());
     }
 
     // Deal operations
     @Transactional
-    public Deal createDeal(Long customerId, Long carId, BigDecimal amount) {
-        Customer customer = customerRepository.findById(customerId)
+    public Deal createDeal(Long customerId, String carVin, BigDecimal amount) {
+        Customer customer = customerDao.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
-        Car car = carRepository.findById(carId)
+        Car car = carDao.findByVinNumber(carVin)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
 
         Deal deal = new Deal();
         deal.setCustomer(customer);
         deal.setCar(car);
         deal.setAmount(amount);
-        deal.setStatus(Deal.DealStatus.LEAD);
+        deal.setStatus(DealStatus.NEW);
+        deal.setDate(LocalDateTime.now());
 
         return dealRepository.save(deal);
     }
@@ -123,7 +136,7 @@ public class DealershipService {
         Deal deal = dealRepository.findById(dealId)
                 .orElseThrow(() -> new RuntimeException("Deal not found"));
         deal.setTestDriveDate(testDriveDate);
-        deal.setStatus(Deal.DealStatus.TEST_DRIVE_SCHEDULED);
+        deal.setStatus(DealStatus.IN_PROGRESS);
         return dealRepository.save(deal);
     }
 
@@ -131,12 +144,12 @@ public class DealershipService {
     public Deal completeDeal(Long dealId) {
         Deal deal = dealRepository.findById(dealId)
                 .orElseThrow(() -> new RuntimeException("Deal not found"));
-        deal.setStatus(Deal.DealStatus.COMPLETED);
-        deal.setDealDate(LocalDateTime.now());
+        deal.setStatus(DealStatus.COMPLETED);
+        deal.setDate(LocalDateTime.now());
 
         Car car = deal.getCar();
-        car.setStatus(Car.CarStatus.SOLD);
-        carRepository.save(car);
+        car.setStatus(CarStatus.SOLD);
+        carDao.save(car);
 
         return dealRepository.save(deal);
     }
@@ -144,24 +157,26 @@ public class DealershipService {
     // Statistics
     public BigDecimal getTotalSales() {
         return dealRepository.findAll().stream()
-                .filter(deal -> deal.getStatus() == Deal.DealStatus.COMPLETED)
+                .filter(deal -> deal.getStatus() == DealStatus.COMPLETED)
                 .map(Deal::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public long getCarsSold() {
-        return carRepository.findByStatus(Car.CarStatus.SOLD).size();
+        return carDao.findAll().stream()
+                .filter(car -> car.getStatus() == CarStatus.SOLD)
+                .count();
     }
 
-    public long getAvailableCars() {
-        return carRepository.findByStatus(Car.CarStatus.NEW).size() +
-               carRepository.findByStatus(Car.CarStatus.USED).size();
+    public long getAvailableCarsCount() {
+        return carDao.findAll().stream()
+                .filter(car -> car.getStatus() == CarStatus.AVAILABLE)
+                .count();
     }
 
     public long getPendingDeals() {
-        return dealRepository.findByStatus(Deal.DealStatus.LEAD).size() +
-               dealRepository.findByStatus(Deal.DealStatus.NEGOTIATION).size() +
-               dealRepository.findByStatus(Deal.DealStatus.PENDING_APPROVAL).size();
+        return dealRepository.findByStatus(DealStatus.NEW).size() +
+               dealRepository.findByStatus(DealStatus.IN_PROGRESS).size();
     }
 
     // Recent deals
@@ -170,5 +185,88 @@ public class DealershipService {
                 .sorted((d1, d2) -> d2.getCreatedAt().compareTo(d1.getCreatedAt()))
                 .limit(10)
                 .toList();
+    }
+
+    // --- ServiceRecord operations (заглушки) ---
+    public java.util.List<com.example.javacrm.model.ServiceRecord> getAllServiceRecords() {
+        return java.util.Collections.emptyList();
+    }
+
+    public java.util.List<com.example.javacrm.model.ServiceRecord> searchServiceRecords(String query, String status, java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
+    }
+
+    public void addServiceRecord(com.example.javacrm.model.ServiceRecord record) {}
+
+    public void updateServiceRecord(com.example.javacrm.model.ServiceRecord record) {}
+
+    public void deleteServiceRecord(Long id) {}
+
+    // --- Deal operations (заглушки) ---
+    public java.util.List<com.example.javacrm.model.Deal> getAllDeals() {
+        return java.util.Collections.emptyList();
+    }
+
+    public java.util.List<com.example.javacrm.model.Deal> searchDeals(String query, String status, java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
+    }
+
+    public void addDeal(com.example.javacrm.model.Deal deal) {}
+
+    public void updateDeal(com.example.javacrm.model.Deal deal) {}
+
+    public void deleteDeal(Long id) {}
+
+    // --- Car operations (заглушки) ---
+    public java.util.List<com.example.javacrm.model.Car> searchCars(String query, String brand, String status) {
+        return java.util.Collections.emptyList();
+    }
+
+    public void updateCar(com.example.javacrm.model.Car car) {}
+
+    public void deleteCar(String vinNumber) {}
+
+    // --- Reports (заглушки) ---
+    public java.math.BigDecimal getTotalSales(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.math.BigDecimal.ZERO;
+    }
+
+    public long getTotalDeals(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return 0L;
+    }
+
+    public java.math.BigDecimal getAverageDealAmount(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.math.BigDecimal.ZERO;
+    }
+
+    public java.util.Map<String, Long> getSalesByBrand(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyMap();
+    }
+
+    public java.util.Map<String, Long> getSalesByMonth(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyMap();
+    }
+
+    public java.util.Map<String, java.math.BigDecimal> getRevenueByMonth(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyMap();
+    }
+
+    public java.util.List<java.util.Map.Entry<String, java.math.BigDecimal>> getTopCustomers(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
+    }
+
+    public java.util.List<java.util.Map.Entry<String, java.math.BigDecimal>> getTopCars(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
+    }
+} 
+        return java.util.Collections.emptyMap();
+    }
+
+    public java.util.List<java.util.Map.Entry<String, java.math.BigDecimal>> getTopCustomers(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
+    }
+
+    public java.util.List<java.util.Map.Entry<String, java.math.BigDecimal>> getTopCars(java.time.LocalDateTime start, java.time.LocalDateTime end) {
+        return java.util.Collections.emptyList();
     }
 } 

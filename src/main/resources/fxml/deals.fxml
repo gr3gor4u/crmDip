@@ -20,7 +20,7 @@
         <DatePicker fx:id="startDate" promptText="Start Date"/>
         <DatePicker fx:id="endDate" promptText="End Date"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="New Deal" onAction="#showNewDealDialog" styleClass="action-button"/>
+        <Button text="New Deal" onAction="#showAddDealDialog" styleClass="action-button"/>
     </HBox>
 
     <!-- Статистика сделок -->

@@ -1,24 +1,19 @@
 package com.example.javacrm;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-@SpringBootApplication(scanBasePackages = "com.example.javacrm")
 public class DealershipApplication extends Application {
-    private ConfigurableApplicationContext springContext;
+    private ApplicationContext springContext;
 
     @Override
     public void init() {
-        springContext = new SpringApplicationBuilder(DealershipApplication.class)
-                .headless(false)
-                .run();
+        springContext = new AnnotationConfigApplicationContext(ApplicationConfig.class);
     }
 
     @Override
@@ -27,15 +22,14 @@ public class DealershipApplication extends Application {
         fxmlLoader.setControllerFactory(springContext::getBean);
         Parent root = fxmlLoader.load();
         
-        primaryStage.setTitle("Car Dealership CRM");
-        primaryStage.setScene(new Scene(root, 1200, 800));
+        primaryStage.setTitle("Автосалон CRM");
+        primaryStage.setScene(new Scene(root));
         primaryStage.show();
     }
 
     @Override
     public void stop() {
         springContext.close();
-        Platform.exit();
     }
 
     public static void main(String[] args) {

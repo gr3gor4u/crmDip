@@ -73,8 +73,8 @@
                     </GridPane>
                 </content>
                 <buttonTypes>
-                    <ButtonType text="Сохранить" ButtonBar.ButtonData.OK_DONE/>
-                    <ButtonType text="Отмена" ButtonBar.ButtonData.CANCEL_CLOSE/>
+                    <ButtonType text="Сохранить" buttonData="OK_DONE"/>
+                    <ButtonType text="Отмена" buttonData="CANCEL_CLOSE"/>
                 </buttonTypes>
             </DialogPane>
         </dialogPane>

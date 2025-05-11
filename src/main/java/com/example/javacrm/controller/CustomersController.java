@@ -25,8 +25,7 @@ public class CustomersController {
     @FXML private ComboBox<String> tagFilter;
     @FXML private TableView<Customer> customersTable;
     @FXML private TableColumn<Customer, Long> idColumn;
-    @FXML private TableColumn<Customer, String> firstNameColumn;
-    @FXML private TableColumn<Customer, String> lastNameColumn;
+    @FXML private TableColumn<Customer, String> fullNameColumn;
     @FXML private TableColumn<Customer, String> emailColumn;
     @FXML private TableColumn<Customer, String> phoneColumn;
     @FXML private TableColumn<Customer, String> tagsColumn;
@@ -34,8 +33,7 @@ public class CustomersController {
     @FXML private TableColumn<Customer, Void> actionsColumn;
 
     @FXML private Dialog<Customer> customerDialog;
-    @FXML private TextField firstNameField;
-    @FXML private TextField lastNameField;
+    @FXML private TextField fullNameField;
     @FXML private TextField emailField;
     @FXML private TextField phoneField;
     @FXML private TextField tagsField;
@@ -59,8 +57,7 @@ public class CustomersController {
 
     private void setupTableColumns() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
-        lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+        fullNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFullName()));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
         tagsColumn.setCellValueFactory(cellData -> 
@@ -169,7 +166,7 @@ public class CustomersController {
         alert.setTitle("Подтверждение удаления");
         alert.setHeaderText("Удаление клиента");
         alert.setContentText("Вы уверены, что хотите удалить клиента " + 
-                           customer.getFirstName() + " " + customer.getLastName() + "?");
+                           customer.getFullName() + "?");
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
@@ -181,8 +178,7 @@ public class CustomersController {
     }
 
     private void clearDialogFields() {
-        firstNameField.clear();
-        lastNameField.clear();
+        fullNameField.clear();
         emailField.clear();
         phoneField.clear();
         tagsField.clear();
@@ -190,8 +186,7 @@ public class CustomersController {
     }
 
     private void fillDialogFields(Customer customer) {
-        firstNameField.setText(customer.getFirstName());
-        lastNameField.setText(customer.getLastName());
+        fullNameField.setText(customer.getFullName());
         emailField.setText(customer.getEmail());
         phoneField.setText(customer.getPhone());
         tagsField.setText(String.join(", ", customer.getTags()));
@@ -200,15 +195,11 @@ public class CustomersController {
 
     private Customer createCustomerFromDialog() {
         Customer customer = new Customer();
-        customer.setFirstName(firstNameField.getText());
-        customer.setLastName(lastNameField.getText());
+        customer.setFullName(fullNameField.getText());
         customer.setEmail(emailField.getText());
         customer.setPhone(phoneField.getText());
+        customer.setTags(new HashSet<>(Arrays.asList(tagsField.getText().split(",\s*"))));
         customer.setNotes(notesField.getText());
-
-        String[] tags = tagsField.getText().split(",");
-        customer.setTags(new HashSet<>(Arrays.asList(tags)));
-
         return customer;
     }
 } 
