@@ -1,7 +1,7 @@
 package com.example.javacrm;
 
 import com.example.javacrm.controller.LoginController;
-import com.example.javacrm.service.DatabaseService;
+import com.example.javacrm.service.ServiceInitializer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,11 +9,11 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class JavaCrmApplication extends Application {
-    private DatabaseService databaseService;
+    private ServiceInitializer serviceInitializer;
 
     @Override
     public void init() {
-        databaseService = DatabaseService.getInstance();
+        serviceInitializer = ServiceInitializer.getInstance();
     }
 
     @Override
@@ -22,7 +22,7 @@ public class JavaCrmApplication extends Application {
         Parent root = loader.load();
         
         LoginController controller = loader.getController();
-        controller.setDatabaseService(databaseService);
+        controller.setUserService(serviceInitializer.getUserService());
         controller.setStage(primaryStage);
         
         Scene scene = new Scene(root);

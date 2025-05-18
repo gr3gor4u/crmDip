@@ -1,34 +1,41 @@
 package com.example.javacrm.controller;
 
 import com.example.javacrm.model.User;
-import com.example.javacrm.service.DatabaseService;
+import com.example.javacrm.service.UserService;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import java.util.regex.Pattern;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class RegisterController {
-    @FXML private TextField firstNameField;
-    @FXML private TextField lastNameField;
-    @FXML private TextField emailField;
-    @FXML private TextField usernameField;
-    @FXML private PasswordField passwordField;
-    @FXML private PasswordField confirmPasswordField;
-    @FXML private Label errorLabel;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private PasswordField passwordField;
+    @FXML
+    private PasswordField confirmPasswordField;
+    @FXML
+    private TextField emailField;
+    @FXML
+    private TextField firstNameField;
+    @FXML
+    private TextField lastNameField;
+    @FXML
+    private Button registerButton;
+    @FXML
+    private Button backButton;
 
-    private DatabaseService databaseService;
+    private UserService userService;
     private Stage stage;
-    
-    private static final Pattern EMAIL_PATTERN = 
-        Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-    private static final Pattern PASSWORD_PATTERN = 
-        Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$");
 
-    public void setDatabaseService(DatabaseService databaseService) {
-        this.databaseService = databaseService;
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void setStage(Stage stage) {
@@ -37,36 +44,31 @@ public class RegisterController {
 
     @FXML
     private void handleRegister() {
-        String username = usernameField.getText().trim();
+        String username = usernameField.getText();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
-        String email = emailField.getText().trim();
-        String firstName = firstNameField.getText().trim();
-        String lastName = lastNameField.getText().trim();
+        String email = emailField.getText();
+        String firstName = firstNameField.getText();
+        String lastName = lastNameField.getText();
 
-        // Проверка заполнения всех полей
         if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || 
             email.isEmpty() || firstName.isEmpty() || lastName.isEmpty()) {
-            showError("Пожалуйста, заполните все поля.");
+            showError("Пожалуйста, заполните все поля");
             return;
         }
 
-        // Проверка email
-        if (!EMAIL_PATTERN.matcher(email).matches()) {
-            showError("Пожалуйста, введите корректный email адрес.");
-            return;
-        }
-
-        // Проверка пароля
-        if (!PASSWORD_PATTERN.matcher(password).matches()) {
-            showError("Пароль должен содержать минимум 8 символов, включая цифры, " +
-                     "строчные и заглавные буквы, и специальные символы (@#$%^&+=).");
-            return;
-        }
-
-        // Проверка совпадения паролей
         if (!password.equals(confirmPassword)) {
-            showError("Пароли не совпадают.");
+            showError("Пароли не совпадают");
+            return;
+        }
+
+        if (userService.isUsernameExists(username)) {
+            showError("Имя пользователя уже занято");
+            return;
+        }
+
+        if (userService.isEmailExists(email)) {
+            showError("Email уже зарегистрирован");
             return;
         }
 
@@ -75,13 +77,13 @@ public class RegisterController {
             user.setUsername(username);
             user.setPassword(password);
             user.setEmail(email);
-            user.setRole("MANAGER"); // Устанавливаем роль MANAGER для новых пользователей
             user.setFirstName(firstName);
             user.setLastName(lastName);
-            
-            databaseService.registerUser(user);
-            showInfo("Регистрация успешна! Теперь войдите в систему.");
-            loadLoginScreen();
+            user.setRole("USER");
+
+            userService.register(user);
+            showSuccess("Регистрация успешна!");
+            loadLoginView();
         } catch (Exception e) {
             showError("Ошибка регистрации: " + e.getMessage());
         }
@@ -89,34 +91,40 @@ public class RegisterController {
 
     @FXML
     private void handleBack() {
-        loadLoginScreen();
+        loadLoginView();
     }
 
-    private void loadLoginScreen() {
+    private void loadLoginView() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             Parent root = loader.load();
-            LoginController loginController = loader.getController();
-            loginController.setDatabaseService(databaseService);
-            loginController.setStage(stage);
+            
+            LoginController controller = loader.getController();
+            controller.setUserService(userService);
+            controller.setStage(stage);
+            
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            
             stage.setScene(scene);
-            stage.setTitle("Вход в систему");
-        } catch (Exception e) {
-            showError("Ошибка загрузки экрана входа: " + e.getMessage());
+        } catch (IOException e) {
+            showError("Не удалось загрузить форму входа: " + e.getMessage());
         }
     }
 
     private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setStyle("-fx-text-fill: red;");
-        errorLabel.setVisible(true);
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle("Ошибка");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
-    private void showInfo(String message) {
-        errorLabel.setText(message);
-        errorLabel.setStyle("-fx-text-fill: green;");
-        errorLabel.setVisible(true);
+    private void showSuccess(String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Успех");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 } 

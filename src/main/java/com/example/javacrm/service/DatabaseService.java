@@ -5,13 +5,22 @@ import java.sql.*;
 import java.util.Optional;
 
 public class DatabaseService {
-    private static final String DB_URL = "jdbc:h2:./crmdb";
+    private static final String DB_URL = "jdbc:h2:./crmdb;DB_CLOSE_ON_EXIT=FALSE";
     private static final String USER = "sa";
     private static final String PASS = "";
     private static DatabaseService instance;
 
     private DatabaseService() {
-        initializeDatabase();
+        try {
+            Class.forName("org.h2.Driver");
+            // Создаем подключение к базе данных
+            try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS)) {
+                // База данных будет создана автоматически при первом подключении
+                initializeDatabase();
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException("Failed to initialize database", e);
+        }
     }
 
     public static DatabaseService getInstance() {
@@ -26,103 +35,23 @@ public class DatabaseService {
     }
 
     public void initializeDatabase() {
-        try (Connection conn = getConnection()) {
-            // Create users table
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute("""
-                    CREATE TABLE IF NOT EXISTS users (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        username VARCHAR(50) NOT NULL UNIQUE,
-                        password VARCHAR(100) NOT NULL,
-                        email VARCHAR(100) NOT NULL UNIQUE,
-                        role VARCHAR(20) NOT NULL,
-                        first_name VARCHAR(50) NOT NULL,
-                        last_name VARCHAR(50) NOT NULL
-                    )
-                """);
-
-                // Create customers table
-                stmt.execute("""
-                    CREATE TABLE IF NOT EXISTS customers (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        name VARCHAR(100) NOT NULL,
-                        email VARCHAR(100),
-                        phone VARCHAR(20),
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """);
-
-                // Create cars table
-                stmt.execute("""
-                    CREATE TABLE IF NOT EXISTS cars (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        model VARCHAR(100) NOT NULL,
-                        brand VARCHAR(50) NOT NULL,
-                        car_year INT NOT NULL,
-                        price DECIMAL(10,2) NOT NULL,
-                        status VARCHAR(20) DEFAULT 'AVAILABLE',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    )
-                """);
-
-                // Create deals table
-                stmt.execute("""
-                    CREATE TABLE IF NOT EXISTS deals (
-                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        customer_id BIGINT NOT NULL,
-                        car_id BIGINT NOT NULL,
-                        amount DECIMAL(10,2) NOT NULL,
-                        date DATE NOT NULL,
-                        status VARCHAR(20) DEFAULT 'ACTIVE',
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (customer_id) REFERENCES customers(id),
-                        FOREIGN KEY (car_id) REFERENCES cars(id)
-                    )
-                """);
-
-                // Insert test user if not exists
-                stmt.execute("""
-                    INSERT INTO users (username, password, email, role, first_name, last_name)
-                    SELECT 'admin', 'admin', 'admin@example.com', 'ADMIN', 'Admin', 'User'
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM users WHERE username = 'admin'
-                    )
-                """);
-
-                // Insert test customer
-                stmt.execute("""
-                    INSERT INTO customers (name, email, phone)
-                    SELECT 'John Doe', 'john@example.com', '+1234567890'
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM customers WHERE email = 'john@example.com'
-                    )
-                """);
-
-                // Insert test car
-                stmt.execute("""
-                    INSERT INTO cars (model, brand, car_year, price)
-                    SELECT 'Model S', 'Tesla', 2023, 80000.00
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM cars WHERE model = 'Model S' AND brand = 'Tesla'
-                    )
-                """);
-
-                // Insert test deal
-                stmt.execute("""
-                    INSERT INTO deals (customer_id, car_id, amount, date)
-                    SELECT 
-                        (SELECT id FROM customers WHERE email = 'john@example.com'),
-                        (SELECT id FROM cars WHERE model = 'Model S'),
-                        80000.00,
-                        CURRENT_DATE
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM deals WHERE customer_id = (
-                            SELECT id FROM customers WHERE email = 'john@example.com'
-                        )
-                    )
-                """);
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+            
+            // Читаем и выполняем schema.sql
+            String schema = new String(getClass().getResourceAsStream("/schema.sql").readAllBytes());
+            for (String sql : schema.split(";")) {
+                if (!sql.trim().isEmpty()) {
+                    try {
+                        stmt.execute(sql);
+                    } catch (SQLException e) {
+                        // Log the error but continue with other statements
+                        System.err.println("Error executing SQL: " + sql);
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
     }

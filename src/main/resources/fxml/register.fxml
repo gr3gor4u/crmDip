@@ -1,41 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
+<?import javafx.geometry.Insets?>
 
-<VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.javacrm.controller.RegisterController">
+<VBox alignment="CENTER" spacing="10" styleClass="login-container" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.RegisterController">
+    
     <padding>
-        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Text style="-fx-font-size: 24px; -fx-font-weight: bold;" text="Регистрация"/>
+    <Label text="Регистрация" styleClass="login-title"/>
     
-    <GridPane vgap="10" hgap="10">
-        <Label text="Имя:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="firstNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-        
-        <Label text="Фамилия:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-        
-        <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-        <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-        
-        <Label text="Имя пользователя:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-        <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-        
-        <Label text="Пароль:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        
-        <Label text="Подтверждение пароля:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-        <PasswordField fx:id="confirmPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-    </GridPane>
+    <TextField fx:id="usernameField" promptText="Имя пользователя" styleClass="login-field"/>
+    <PasswordField fx:id="passwordField" promptText="Пароль" styleClass="login-field"/>
+    <PasswordField fx:id="confirmPasswordField" promptText="Повторите пароль" styleClass="login-field"/>
+    <TextField fx:id="emailField" promptText="Email" styleClass="login-field"/>
+    <TextField fx:id="firstNameField" promptText="Имя" styleClass="login-field"/>
+    <TextField fx:id="lastNameField" promptText="Фамилия" styleClass="login-field"/>
     
     <HBox spacing="10" alignment="CENTER">
-        <Button fx:id="registerButton" maxWidth="Infinity" onAction="#handleRegister" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Зарегистрироваться"/>
-        <Button fx:id="backButton" maxWidth="Infinity" onAction="#handleBack" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;" text="Назад"/>
+        <Button fx:id="registerButton" text="Зарегистрироваться" onAction="#handleRegister" styleClass="login-button"/>
+        <Button fx:id="backButton" text="Назад к входу" onAction="#handleBack" styleClass="secondary-button"/>
     </HBox>
-    
-    <Label fx:id="errorLabel" style="-fx-text-fill: red;" visible="false"/>
 </VBox> 

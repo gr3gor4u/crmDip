@@ -7,62 +7,27 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.javacrm.controller.DealsController"
-      spacing="10" styleClass="content-pane">
+      spacing="20">
     
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Сделки" style="-fx-font-size: 20px;"/>
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Управление сделками" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="searchField" promptText="Поиск..." prefWidth="200"/>
-        <Button text="Добавить" onAction="#handleAddDeal"/>
+        <Button text="Новая сделка" onAction="#handleAddDeal"/>
     </HBox>
 
-    <!-- Фильтры и поиск -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Поиск сделок..." HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="statusFilter" promptText="Статус сделки"/>
-        <Button text="Поиск" onAction="#handleSearch"/>
-        <Button text="Новая сделка" onAction="#handleAddDeal" styleClass="button-primary"/>
-    </HBox>
-
-    <!-- Статистика сделок -->
-    <HBox spacing="20">
-        <VBox styleClass="card" HBox.hgrow="ALWAYS">
-            <Label text="Total Deals" styleClass="card-title"/>
-            <Label fx:id="totalDealsLabel" text="0" styleClass="card-value"/>
-        </VBox>
-        
-        <VBox styleClass="card" HBox.hgrow="ALWAYS">
-            <Label text="Total Revenue" styleClass="card-title"/>
-            <Label fx:id="totalRevenueLabel" text="$0" styleClass="card-value"/>
-        </VBox>
-        
-        <VBox styleClass="card" HBox.hgrow="ALWAYS">
-            <Label text="Average Deal Value" styleClass="card-title"/>
-            <Label fx:id="averageDealLabel" text="$0" styleClass="card-value"/>
-        </VBox>
-    </HBox>
-
-    <!-- Таблица сделок -->
     <TableView fx:id="dealsTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="customerColumn" text="Клиент" prefWidth="150"/>
-            <TableColumn fx:id="carColumn" text="Автомобиль" prefWidth="150"/>
+            <TableColumn fx:id="customerColumn" text="Клиент" prefWidth="200"/>
+            <TableColumn fx:id="carColumn" text="Автомобиль" prefWidth="200"/>
             <TableColumn fx:id="amountColumn" text="Сумма" prefWidth="100"/>
+            <TableColumn fx:id="dateColumn" text="Дата" prefWidth="150"/>
             <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
-            <TableColumn fx:id="dateColumn" text="Дата" prefWidth="120"/>
-            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="200"/>
+            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="150"/>
         </columns>
     </TableView>
-
-    <!-- Пагинация -->
-    <HBox spacing="10" alignment="CENTER">
-        <Button text="Previous" onAction="#previousPage" styleClass="nav-button"/>
-        <Label fx:id="pageInfoLabel" text="Page 1 of 1"/>
-        <Button text="Next" onAction="#nextPage" styleClass="nav-button"/>
-    </HBox>
 </VBox> 

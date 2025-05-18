@@ -1,38 +1,34 @@
 package com.example.javacrm.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Deal {
+public class Insurance {
     private Long id;
-    private Long carId;
+    private String carVin;
     private Long customerId;
-    private Long insuranceId;
-    private Double totalPrice;
+    private String insuranceType;
+    private String insuranceNumber;
+    private Double price;
     private String status;
     private LocalDateTime createdAt;
-    private List<DealEquipment> equipment;
     
     // Relationships
     private Customer customer;
     private Car car;
-    private Insurance insurance;
 
-    public Deal() {
+    public Insurance() {
         this.createdAt = LocalDateTime.now();
-        this.equipment = new ArrayList<>();
     }
 
-    public Deal(Long id, Long carId, Long customerId, Long insuranceId, Double totalPrice, String status) {
+    public Insurance(Long id, String carVin, Long customerId, String insuranceType, String insuranceNumber, Double price, String status) {
         this.id = id;
-        this.carId = carId;
+        this.carVin = carVin;
         this.customerId = customerId;
-        this.insuranceId = insuranceId;
-        this.totalPrice = totalPrice;
+        this.insuranceType = insuranceType;
+        this.insuranceNumber = insuranceNumber;
+        this.price = price;
         this.status = status;
         this.createdAt = LocalDateTime.now();
-        this.equipment = new ArrayList<>();
     }
 
     public Long getId() {
@@ -43,12 +39,12 @@ public class Deal {
         this.id = id;
     }
 
-    public Long getCarId() {
-        return carId;
+    public String getCarVin() {
+        return carVin;
     }
 
-    public void setCarId(Long carId) {
-        this.carId = carId;
+    public void setCarVin(String carVin) {
+        this.carVin = carVin;
     }
 
     public Long getCustomerId() {
@@ -59,20 +55,28 @@ public class Deal {
         this.customerId = customerId;
     }
 
-    public Long getInsuranceId() {
-        return insuranceId;
+    public String getInsuranceType() {
+        return insuranceType;
     }
 
-    public void setInsuranceId(Long insuranceId) {
-        this.insuranceId = insuranceId;
+    public void setInsuranceType(String insuranceType) {
+        this.insuranceType = insuranceType;
     }
 
-    public Double getTotalPrice() {
-        return totalPrice;
+    public String getInsuranceNumber() {
+        return insuranceNumber;
     }
 
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setInsuranceNumber(String insuranceNumber) {
+        this.insuranceNumber = insuranceNumber;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public String getStatus() {
@@ -89,14 +93,6 @@ public class Deal {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public List<DealEquipment> getEquipment() {
-        return equipment;
-    }
-
-    public void setEquipment(List<DealEquipment> equipment) {
-        this.equipment = equipment;
     }
 
     public Customer getCustomer() {
@@ -117,18 +113,7 @@ public class Deal {
     public void setCar(Car car) {
         this.car = car;
         if (car != null) {
-            this.carId = car.getId();
-        }
-    }
-
-    public Insurance getInsurance() {
-        return insurance;
-    }
-
-    public void setInsurance(Insurance insurance) {
-        this.insurance = insurance;
-        if (insurance != null) {
-            this.insuranceId = insurance.getId();
+            this.carVin = car.getVin();
         }
     }
 } 

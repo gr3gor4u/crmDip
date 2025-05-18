@@ -4,23 +4,21 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox alignment="CENTER" spacing="20" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.LoginController">
+<VBox alignment="CENTER" spacing="10" styleClass="login-container" xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.LoginController">
+    
     <padding>
-        <Insets top="40" right="40" bottom="40" left="40"/>
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="Вход в систему" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <Label text="Вход в систему" styleClass="login-title"/>
     
-    <VBox spacing="15" maxWidth="400" styleClass="login-form">
-        <Label text="Имя пользователя:" style="-fx-font-size: 14px;"/>
-        <TextField fx:id="usernameField" promptText="Введите имя пользователя"/>
-        
-        <Label text="Пароль:" style="-fx-font-size: 14px;"/>
-        <PasswordField fx:id="passwordField" promptText="Введите пароль"/>
-        
-        <HBox spacing="10" alignment="CENTER">
-            <Button text="Войти" onAction="#handleLogin" defaultButton="true" style="-fx-min-width: 120px;"/>
-            <Button text="Регистрация" onAction="#handleRegister" style="-fx-min-width: 120px;"/>
-        </HBox>
-    </VBox>
+    <TextField fx:id="usernameField" promptText="Имя пользователя" styleClass="login-field"/>
+    <PasswordField fx:id="passwordField" promptText="Пароль" styleClass="login-field"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="loginButton" text="Войти" onAction="#handleLogin" styleClass="login-button"/>
+        <Button fx:id="registerButton" text="Регистрация" onAction="#handleRegister" styleClass="secondary-button"/>
+    </HBox>
 </VBox> 

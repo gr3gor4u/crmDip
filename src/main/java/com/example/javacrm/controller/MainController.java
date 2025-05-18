@@ -9,6 +9,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 
@@ -32,14 +35,29 @@ public class MainController {
     private Button dealsButton;
     
     @FXML
-    private Button reportsButton;
+    private Button insuranceButton;
+    
+    @FXML
+    private Button equipmentButton;
+    
+    @FXML
+    private Button logoutButton;
     
     private User currentUser;
     private Stage stage;
     
     @FXML
     public void initialize() {
-        // Устанавливаем дашборд как активную вкладку при запуске
+        // Устанавливаем обработчики событий для кнопок
+        dashboardButton.setOnAction(e -> showDashboard());
+        carsButton.setOnAction(e -> showCars());
+        customersButton.setOnAction(e -> showCustomers());
+        dealsButton.setOnAction(e -> showDeals());
+        insuranceButton.setOnAction(e -> showInsurance());
+        equipmentButton.setOnAction(e -> showEquipment());
+        logoutButton.setOnAction(e -> handleLogout());
+        
+        // Показываем дашборд по умолчанию
         showDashboard();
     }
     
@@ -58,22 +76,34 @@ public class MainController {
         }
     }
     
-    private void setActiveButton(Button activeButton) {
-        // Сбрасываем стили всех кнопок
-        dashboardButton.getStyleClass().remove("active");
-        carsButton.getStyleClass().remove("active");
-        customersButton.getStyleClass().remove("active");
-        dealsButton.getStyleClass().remove("active");
-        reportsButton.getStyleClass().remove("active");
-        
-        // Устанавливаем стиль для активной кнопки
-        activeButton.getStyleClass().add("active");
+    @FXML
+    private void showDashboard() {
+        loadContent("/fxml/dashboard.fxml");
     }
     
     @FXML
-    private void showDashboard() {
-        setActiveButton(dashboardButton);
-        loadContent("/fxml/dashboard.fxml");
+    private void showCars() {
+        loadContent("/fxml/cars.fxml");
+    }
+    
+    @FXML
+    private void showCustomers() {
+        loadContent("/fxml/customers.fxml");
+    }
+    
+    @FXML
+    private void showDeals() {
+        loadContent("/fxml/deals.fxml");
+    }
+    
+    @FXML
+    private void showInsurance() {
+        loadContent("/fxml/insurance.fxml");
+    }
+    
+    @FXML
+    private void showEquipment() {
+        loadContent("/fxml/equipment.fxml");
     }
     
     @FXML
@@ -81,39 +111,14 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
             Parent root = loader.load();
-            LoginController loginController = loader.getController();
-            loginController.setStage(stage);
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            Stage stage = (Stage) contentArea.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Вход в систему");
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            showError("Ошибка при выходе из системы: " + e.getMessage());
         }
-    }
-    
-    @FXML
-    private void handleCars() {
-        setActiveButton(carsButton);
-        loadContent("/fxml/cars.fxml");
-    }
-    
-    @FXML
-    private void handleCustomers() {
-        setActiveButton(customersButton);
-        loadContent("/fxml/customers.fxml");
-    }
-    
-    @FXML
-    private void handleDeals() {
-        setActiveButton(dealsButton);
-        loadContent("/fxml/deals.fxml");
-    }
-    
-    @FXML
-    private void handleReports() {
-        setActiveButton(reportsButton);
-        loadContent("/fxml/reports.fxml");
     }
     
     private void loadContent(String fxmlPath) {
@@ -124,6 +129,15 @@ public class MainController {
             contentArea.getChildren().add(content);
         } catch (IOException e) {
             e.printStackTrace();
+            showError("Ошибка при загрузке содержимого: " + e.getMessage());
         }
+    }
+    
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Ошибка");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 } 

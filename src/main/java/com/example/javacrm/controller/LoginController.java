@@ -1,92 +1,103 @@
 package com.example.javacrm.controller;
 
 import com.example.javacrm.model.User;
-import com.example.javacrm.service.DatabaseService;
+import com.example.javacrm.service.UserService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class LoginController {
     @FXML
     private TextField usernameField;
-    
     @FXML
     private PasswordField passwordField;
-    
-    private DatabaseService databaseService;
+    @FXML
+    private Button loginButton;
+    @FXML
+    private Button registerButton;
+
+    private UserService userService;
     private Stage stage;
-    
-    public void setDatabaseService(DatabaseService databaseService) {
-        this.databaseService = databaseService;
+
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
-    
+
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-    
+
     @FXML
     private void handleLogin() {
         String username = usernameField.getText();
         String password = passwordField.getText();
-        
+
         if (username.isEmpty() || password.isEmpty()) {
-            showError("Ошибка входа", "Пожалуйста, введите имя пользователя и пароль");
+            showError("Пожалуйста, введите имя пользователя и пароль");
             return;
         }
-        
-        databaseService.authenticateUser(username, password).ifPresentOrElse(
-            this::loadMainScreen,
-            () -> showError("Ошибка входа", "Неверное имя пользователя или пароль")
-        );
-    }
-    
-    private void loadMainScreen(User user) {
+
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+            User user = userService.authenticate(username, password);
+            if (user != null) {
+                loadMainView(user);
+            } else {
+                showError("Неверное имя пользователя или пароль");
+            }
+        } catch (Exception e) {
+            showError("Ошибка входа: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleRegister() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
             Parent root = loader.load();
             
-            MainController controller = loader.getController();
-            controller.setCurrentUser(user);
+            RegisterController controller = loader.getController();
+            controller.setUserService(userService);
             controller.setStage(stage);
             
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
             
             stage.setScene(scene);
-            stage.setTitle("CarStore CRM - Главное меню");
-            stage.show();
-        } catch (Exception e) {
-            showError("Ошибка", "Не удалось загрузить главный экран: " + e.getMessage());
+        } catch (IOException e) {
+            showError("Не удалось загрузить форму регистрации: " + e.getMessage());
         }
     }
-    
-    @FXML
-    private void handleRegister() {
+
+    private void loadMainView(User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/dashboard.fxml"));
             Parent root = loader.load();
-            RegisterController registerController = loader.getController();
-            registerController.setDatabaseService(databaseService);
-            registerController.setStage(stage);
+            
+            DashboardController controller = loader.getController();
+            controller.setUser(user);
+            controller.setStage(stage);
+            
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            
             stage.setScene(scene);
-            stage.setTitle("Регистрация");
-        } catch (Exception e) {
-            showError("Ошибка", "Не удалось загрузить окно регистрации: " + e.getMessage());
+        } catch (IOException e) {
+            showError("Не удалось загрузить главное окно: " + e.getMessage());
         }
     }
-    
-    private void showError(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
+
+    private void showError(String message) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+        alert.setTitle("Ошибка");
         alert.setHeaderText(null);
-        alert.setContentText(content);
+        alert.setContentText(message);
         alert.showAndWait();
     }
 } 

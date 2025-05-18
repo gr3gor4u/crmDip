@@ -2,34 +2,36 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.MainController">
-    <top>
-        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="10">
-            <padding>
-                <Insets top="10" right="20" bottom="10" left="20"/>
-            </padding>
-            <Label text="CarsStore" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="userLabel" text="Пользователь: "/>
-            <Button text="Выйти" onAction="#handleLogout"/>
-        </HBox>
-    </top>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.MainController"
+      stylesheets="@../css/styles.css"
+      spacing="0">
     
-    <left>
-        <VBox styleClass="sidebar" spacing="5">
-            <padding>
-                <Insets top="20" right="10" bottom="20" left="10"/>
-            </padding>
-            <Button text="Дашборд" styleClass="sidebar-button" onAction="#showDashboard" fx:id="dashboardButton"/>
-            <Button text="Автомобили" styleClass="sidebar-button" onAction="#handleCars" fx:id="carsButton"/>
-            <Button text="Клиенты" styleClass="sidebar-button" onAction="#handleCustomers" fx:id="customersButton"/>
-            <Button text="Сделки" styleClass="sidebar-button" onAction="#handleDeals" fx:id="dealsButton"/>
-            <Button text="Отчеты" styleClass="sidebar-button" onAction="#handleReports" fx:id="reportsButton"/>
+    <!-- Header -->
+    <HBox styleClass="header">
+        <Label text="Автосалон CRM" styleClass="header-title"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="userLabel" styleClass="header-user"/>
+        <Button text="Выйти" onAction="#handleLogout" styleClass="header-button"/>
+    </HBox>
+    
+    <!-- Main Content -->
+    <HBox spacing="0">
+        <!-- Sidebar -->
+        <VBox styleClass="sidebar" spacing="10">
+            <Button fx:id="dashboardButton" text="Дашборд" onAction="#showDashboard" styleClass="sidebar-button"/>
+            <Button fx:id="carsButton" text="Автомобили" onAction="#handleCars" styleClass="sidebar-button"/>
+            <Button fx:id="customersButton" text="Клиенты" onAction="#handleCustomers" styleClass="sidebar-button"/>
+            <Button fx:id="dealsButton" text="Сделки" onAction="#handleDeals" styleClass="sidebar-button"/>
+            <Button fx:id="insuranceButton" text="Страховка" onAction="#handleInsurance" styleClass="sidebar-button"/>
+            <Button fx:id="equipmentButton" text="Доп. оборудование" onAction="#handleEquipment" styleClass="sidebar-button"/>
+            <Button fx:id="reportsButton" text="Отчеты" onAction="#handleReports" styleClass="sidebar-button"/>
         </VBox>
-    </left>
-    
-    <center>
-        <StackPane fx:id="contentArea"/>
-    </center>
-</BorderPane> 
+        
+        <!-- Content Area -->
+        <StackPane fx:id="contentArea" styleClass="content-area" HBox.hgrow="ALWAYS"/>
+    </HBox>
+</VBox> 

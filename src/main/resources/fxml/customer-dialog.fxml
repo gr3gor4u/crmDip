@@ -14,21 +14,29 @@
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
 
-            <Label text="Имя:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-            <TextField fx:id="firstNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-
-            <Label text="Фамилия:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-            <Label text="Телефон:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-            <TextField fx:id="phoneField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-            <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-            <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-            <Label text="Адрес:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-            <TextArea fx:id="addressArea" prefRowCount="3" wrapText="true" 
-                     GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            <Label text="Фамилия:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="lastNameField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            
+            <Label text="Имя:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="firstNameField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            
+            <Label text="Отчество:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextField fx:id="middleNameField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+            
+            <Label text="Семейное положение:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <ComboBox fx:id="maritalStatusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+            
+            <Label text="Количество детей:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            <TextField fx:id="childrenCountField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            
+            <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+            <TextField fx:id="emailField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+            
+            <Label text="Телефон:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+            <TextField fx:id="phoneField" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+            
+            <Label text="Паспорт:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+            <TextField fx:id="passportField" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
         </GridPane>
     </content>
 

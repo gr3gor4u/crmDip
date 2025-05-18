@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.javacrm.controller.InsuranceController"
+      spacing="20">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <!-- Header -->
+    <Label text="Страховка" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    
+    <!-- Search Filters -->
+    <GridPane hgap="10" vgap="10">
+        <Label text="VIN автомобиля:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="searchCarVinField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="ID клиента:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="searchCustomerIdField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Тип страховки:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="searchInsuranceTypeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <Button text="Поиск" onAction="#handleSearch"/>
+            <Button text="Очистить" onAction="#handleClearSearch"/>
+        </HBox>
+    </GridPane>
+    
+    <!-- Input Fields -->
+    <GridPane hgap="10" vgap="10">
+        <Label text="ID клиента:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="customerIdField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="VIN автомобиля:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="carVinField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Тип страховки:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="insuranceTypeField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <Label text="Номер страховки:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="insuranceNumberField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        
+        <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <TextField fx:id="statusField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        
+        <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <Button text="Добавить" onAction="#handleAddInsurance"/>
+            <Button text="Обновить" onAction="#handleUpdateInsurance"/>
+            <Button text="Удалить" onAction="#handleDeleteInsurance"/>
+        </HBox>
+    </GridPane>
+    
+    <!-- Table -->
+    <TableView fx:id="insuranceTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="customerIdColumn" text="ID клиента" prefWidth="100"/>
+            <TableColumn fx:id="carVinColumn" text="VIN автомобиля" prefWidth="150"/>
+            <TableColumn fx:id="insuranceTypeColumn" text="Тип страховки" prefWidth="150"/>
+            <TableColumn fx:id="insuranceNumberColumn" text="Номер страховки" prefWidth="150"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
+            <TableColumn fx:id="createdAtColumn" text="Дата создания" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox> 

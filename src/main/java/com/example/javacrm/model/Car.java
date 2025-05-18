@@ -1,24 +1,23 @@
 package com.example.javacrm.model;
 
+import java.time.LocalDateTime;
+
 public class Car {
     private Long id;
-    private String model;
+    private String vin;
     private String brand;
-    private Integer carYear;
+    private String model;
+    private Integer year;
+    private String color;
+    private String kuzov;
+    private Double obemDvig;
+    private Integer horsePower;
     private Double price;
     private String status;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     public Car() {
-    }
-
-    public Car(Long id, String model, String brand, Integer carYear, Double price, String status) {
-        this.id = id;
-        this.model = model;
-        this.brand = brand;
-        this.carYear = carYear;
-        this.price = price;
-        this.status = status;
+        this.createdAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -29,12 +28,12 @@ public class Car {
         this.id = id;
     }
 
-    public String getModel() {
-        return model;
+    public String getVin() {
+        return vin;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public void setVin(String vin) {
+        this.vin = vin;
     }
 
     public String getBrand() {
@@ -45,12 +44,52 @@ public class Car {
         this.brand = brand;
     }
 
-    public Integer getCarYear() {
-        return carYear;
+    public String getModel() {
+        return model;
     }
 
-    public void setCarYear(Integer carYear) {
-        this.carYear = carYear;
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+    public Integer getYear() {
+        return year;
+    }
+
+    public void setYear(Integer year) {
+        this.year = year;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getKuzov() {
+        return kuzov;
+    }
+
+    public void setKuzov(String kuzov) {
+        this.kuzov = kuzov;
+    }
+
+    public Double getObemDvig() {
+        return obemDvig;
+    }
+
+    public void setObemDvig(Double obemDvig) {
+        this.obemDvig = obemDvig;
+    }
+
+    public Integer getHorsePower() {
+        return horsePower;
+    }
+
+    public void setHorsePower(Integer horsePower) {
+        this.horsePower = horsePower;
     }
 
     public Double getPrice() {
@@ -69,11 +108,11 @@ public class Car {
         this.status = status;
     }
 
-    public String getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
