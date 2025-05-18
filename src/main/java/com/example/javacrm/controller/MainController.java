@@ -1,95 +1,129 @@
 package com.example.javacrm.controller;
 
-import com.example.javacrm.service.DealershipService;
+import com.example.javacrm.model.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Controller;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 
-@Controller
 public class MainController {
     @FXML
-    private StackPane contentArea;
-
+    private Label userLabel;
+    
     @FXML
-    private Label statusLabel;
-
-    private final DealershipService dealershipService;
-    private final ApplicationContext applicationContext;
-
-    @Autowired
-    public MainController(DealershipService dealershipService, ApplicationContext applicationContext) {
-        this.dealershipService = dealershipService;
-        this.applicationContext = applicationContext;
-    }
-
+    private StackPane contentArea;
+    
+    @FXML
+    private Button dashboardButton;
+    
+    @FXML
+    private Button carsButton;
+    
+    @FXML
+    private Button customersButton;
+    
+    @FXML
+    private Button dealsButton;
+    
+    @FXML
+    private Button reportsButton;
+    
+    private User currentUser;
+    private Stage stage;
+    
     @FXML
     public void initialize() {
+        // Устанавливаем дашборд как активную вкладку при запуске
         showDashboard();
     }
-
+    
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+        updateUserLabel();
+    }
+    
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+    
+    private void updateUserLabel() {
+        if (currentUser != null) {
+            userLabel.setText("Пользователь: " + currentUser.getFullName());
+        }
+    }
+    
+    private void setActiveButton(Button activeButton) {
+        // Сбрасываем стили всех кнопок
+        dashboardButton.getStyleClass().remove("active");
+        carsButton.getStyleClass().remove("active");
+        customersButton.getStyleClass().remove("active");
+        dealsButton.getStyleClass().remove("active");
+        reportsButton.getStyleClass().remove("active");
+        
+        // Устанавливаем стиль для активной кнопки
+        activeButton.getStyleClass().add("active");
+    }
+    
     @FXML
     private void showDashboard() {
-        loadView("/fxml/dashboard.fxml");
-        updateStatus("Дашборд загружен");
+        setActiveButton(dashboardButton);
+        loadContent("/fxml/dashboard.fxml");
     }
-
-    @FXML
-    private void showCustomers() {
-        loadView("/fxml/customers.fxml");
-        updateStatus("Список клиентов загружен");
-    }
-
-    @FXML
-    private void showCars() {
-        loadView("/fxml/cars.fxml");
-        updateStatus("Каталог автомобилей загружен");
-    }
-
-    @FXML
-    private void showDeals() {
-        loadView("/fxml/deals.fxml");
-        updateStatus("Список сделок загружен");
-    }
-
-    @FXML
-    private void showService() {
-        loadView("/fxml/service.fxml");
-        updateStatus("Сервисный модуль загружен");
-    }
-
-    @FXML
-    private void showReports() {
-        loadView("/fxml/reports.fxml");
-        updateStatus("Отчеты загружены");
-    }
-
+    
     @FXML
     private void handleLogout() {
-        // TODO: Implement logout logic
-        updateStatus("Выход из системы...");
-    }
-
-    private void loadView(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            loader.setControllerFactory(applicationContext::getBean);
-            Parent view = loader.load();
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+            Parent root = loader.load();
+            LoginController loginController = loader.getController();
+            loginController.setStage(stage);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setTitle("Вход в систему");
         } catch (IOException e) {
-            updateStatus("Ошибка загрузки представления: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
-    private void updateStatus(String message) {
-        statusLabel.setText(message);
+    
+    @FXML
+    private void handleCars() {
+        setActiveButton(carsButton);
+        loadContent("/fxml/cars.fxml");
+    }
+    
+    @FXML
+    private void handleCustomers() {
+        setActiveButton(customersButton);
+        loadContent("/fxml/customers.fxml");
+    }
+    
+    @FXML
+    private void handleDeals() {
+        setActiveButton(dealsButton);
+        loadContent("/fxml/deals.fxml");
+    }
+    
+    @FXML
+    private void handleReports() {
+        setActiveButton(reportsButton);
+        loadContent("/fxml/reports.fxml");
+    }
+    
+    private void loadContent(String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent content = loader.load();
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 } 

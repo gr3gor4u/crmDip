@@ -7,7 +7,7 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.javacrm.controller.CustomersController"
-      styleClass="content-area"
+      styleClass="content-pane"
       spacing="20">
     
     <padding>
@@ -16,29 +16,28 @@
 
     <!-- Заголовок и кнопки управления -->
     <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label text="Управление клиентами" styleClass="section-title"/>
+        <Label text="Клиенты" styleClass="section-title"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Добавить клиента" onAction="#showAddCustomerDialog" styleClass="action-button"/>
+        <TextField fx:id="searchField" promptText="Поиск..." prefWidth="200"/>
+        <Button text="Добавить" onAction="#handleAddCustomer" styleClass="button-primary"/>
     </HBox>
 
     <!-- Поиск и фильтры -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Поиск по имени, email или телефону" HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="tagFilter" promptText="Фильтр по тегу"/>
-        <Button text="Поиск" onAction="#searchCustomers"/>
-        <Button text="Сбросить" onAction="#resetSearch"/>
+        <TextField fx:id="searchField" promptText="Поиск клиентов..." HBox.hgrow="ALWAYS"/>
+        <Button text="Поиск" onAction="#handleSearch"/>
+        <Button text="Добавить клиента" onAction="#handleAddCustomer" styleClass="button-primary"/>
     </HBox>
 
     <!-- Таблица клиентов -->
     <TableView fx:id="customersTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="firstNameColumn" text="Имя" prefWidth="150"/>
-            <TableColumn fx:id="lastNameColumn" text="Фамилия" prefWidth="150"/>
-            <TableColumn fx:id="emailColumn" text="Email" prefWidth="200"/>
-            <TableColumn fx:id="phoneColumn" text="Телефон" prefWidth="150"/>
-            <TableColumn fx:id="tagsColumn" text="Теги" prefWidth="200"/>
-            <TableColumn fx:id="createdAtColumn" text="Дата регистрации" prefWidth="150"/>
+            <TableColumn fx:id="firstNameColumn" text="Имя" prefWidth="100"/>
+            <TableColumn fx:id="lastNameColumn" text="Фамилия" prefWidth="100"/>
+            <TableColumn fx:id="phoneColumn" text="Телефон" prefWidth="120"/>
+            <TableColumn fx:id="emailColumn" text="Email" prefWidth="150"/>
+            <TableColumn fx:id="addressColumn" text="Адрес" prefWidth="200"/>
             <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="150"/>
         </columns>
     </TableView>

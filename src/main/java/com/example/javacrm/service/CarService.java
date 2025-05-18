@@ -1,197 +1,95 @@
 package com.example.javacrm.service;
 
 import com.example.javacrm.model.Car;
-import com.example.javacrm.model.CarStatus;
-import com.example.javacrm.repository.CarDao;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
-@Transactional
 public class CarService {
+    private final DatabaseService databaseService;
 
-    private final CarDao carDao;
-
-    @Autowired
-    public CarService(CarDao carDao) {
-        this.carDao = carDao;
+    public CarService(DatabaseService databaseService) {
+        this.databaseService = databaseService;
     }
 
     public List<Car> getAllCars() {
-        return carDao.findAll();
-    }
-
-    public Car getCarById(Long id) {
-        return carDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-    }
-
-    public Car getCarByVin(String vinNumber) {
-        return carDao.findByVinNumber(vinNumber)
-                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-    }
-
-    public Car createCar(Car car) {
-        if (carDao.existsByVinNumber(car.getVinNumber())) {
-            throw new IllegalArgumentException("Автомобиль с таким VIN уже существует");
+        List<Car> cars = new ArrayList<>();
+        try (Connection conn = databaseService.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM cars ORDER BY created_at DESC")) {
+            
+            while (rs.next()) {
+                Car car = new Car();
+                car.setId(rs.getLong("id"));
+                car.setModel(rs.getString("model"));
+                car.setBrand(rs.getString("brand"));
+                car.setCarYear(rs.getInt("car_year"));
+                car.setPrice(rs.getDouble("price"));
+                car.setStatus(rs.getString("status"));
+                car.setCreatedAt(rs.getString("created_at"));
+                cars.add(car);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get cars", e);
         }
-        carDao.save(car);
-        return car;
+        return cars;
     }
 
-    public Car updateCar(Long id, Car car) {
-        Car existingCar = getCarById(id);
-        if (!existingCar.getVinNumber().equals(car.getVinNumber()) &&
-            carDao.existsByVinNumber(car.getVinNumber())) {
-            throw new IllegalArgumentException("Автомобиль с таким VIN уже существует");
+    public void addCar(Car car) {
+        try (Connection conn = databaseService.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                 "INSERT INTO cars (model, brand, car_year, price, status) VALUES (?, ?, ?, ?, ?)")) {
+            
+            stmt.setString(1, car.getModel());
+            stmt.setString(2, car.getBrand());
+            stmt.setInt(3, car.getCarYear());
+            stmt.setDouble(4, car.getPrice());
+            stmt.setString(5, car.getStatus());
+            
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to add car", e);
         }
-        // Обновляем все поля
-        existingCar.setVinNumber(car.getVinNumber());
-        existingCar.setBrand(car.getBrand());
-        existingCar.setModel(car.getModel());
-        existingCar.setYear(car.getYear());
-        existingCar.setColor(car.getColor());
-        existingCar.setPrice(car.getPrice());
-        existingCar.setBodyType(car.getBodyType());
-        existingCar.setEngineVolume(car.getEngineVolume());
-        existingCar.setHorsePower(car.getHorsePower());
-        existingCar.setMileage(car.getMileage());
-        existingCar.setStatus(car.getStatus());
-        existingCar.setDescription(car.getDescription());
-        carDao.update(existingCar);
-        return existingCar;
+    }
+
+    public void updateCar(Car car) {
+        try (Connection conn = databaseService.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                 "UPDATE cars SET model = ?, brand = ?, car_year = ?, price = ?, status = ? WHERE id = ?")) {
+            
+            stmt.setString(1, car.getModel());
+            stmt.setString(2, car.getBrand());
+            stmt.setInt(3, car.getCarYear());
+            stmt.setDouble(4, car.getPrice());
+            stmt.setString(5, car.getStatus());
+            stmt.setLong(6, car.getId());
+            
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update car", e);
+        }
     }
 
     public void deleteCar(Long id) {
-        Car car = getCarById(id);
-        if (car.getStatus() == CarStatus.SOLD) {
-            throw new IllegalStateException("Нельзя удалить проданный автомобиль");
+        try (Connection conn = databaseService.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM cars WHERE id = ?")) {
+            
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete car", e);
         }
-        carDao.delete(car);
     }
 
-    public List<Car> searchCars(String searchText, String brand, CarStatus status) {
-        List<Car> cars = carDao.findAll();
-        return cars.stream()
-                .filter(car -> {
-                    boolean matchesSearch = searchText == null || searchText.isEmpty() ||
-                            car.getVinNumber().toLowerCase().contains(searchText.toLowerCase()) ||
-                            car.getBrand().toLowerCase().contains(searchText.toLowerCase()) ||
-                            car.getModel().toLowerCase().contains(searchText.toLowerCase());
-                    boolean matchesBrand = brand == null || brand.isEmpty() ||
-                            car.getBrand().equals(brand);
-                    boolean matchesStatus = status == null ||
-                            car.getStatus() == status;
-                    return matchesSearch && matchesBrand && matchesStatus;
-                })
-                .collect(Collectors.toList());
-    }
-
-    public List<String> getAllBrands() {
-        return carDao.getAllBrands();
-    }
-} 
-
-import com.example.javacrm.model.Car;
-import com.example.javacrm.model.CarStatus;
-import com.example.javacrm.repository.CarDao;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-@Service
-@Transactional
-public class CarService {
-
-    private final CarDao carDao;
-
-    @Autowired
-    public CarService(CarDao carDao) {
-        this.carDao = carDao;
-    }
-
-    public List<Car> getAllCars() {
-        return carDao.findAll();
-    }
-
-    public Car getCarById(Long id) {
-        return carDao.findById(id)
-                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-    }
-
-    public Car getCarByVin(String vinNumber) {
-        return carDao.findByVinNumber(vinNumber)
-                .orElseThrow(() -> new RuntimeException("Автомобиль не найден"));
-    }
-
-    public Car createCar(Car car) {
-        if (carDao.existsByVinNumber(car.getVinNumber())) {
-            throw new IllegalArgumentException("Автомобиль с таким VIN уже существует");
+    public void updateCarStatus(Long id, String status) {
+        try (Connection conn = databaseService.getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE cars SET status = ? WHERE id = ?")) {
+            
+            stmt.setString(1, status);
+            stmt.setLong(2, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update car status", e);
         }
-        carDao.save(car);
-        return car;
-    }
-
-    public Car updateCar(Long id, Car car) {
-        Car existingCar = getCarById(id);
-        if (!existingCar.getVinNumber().equals(car.getVinNumber()) &&
-            carDao.existsByVinNumber(car.getVinNumber())) {
-            throw new IllegalArgumentException("Автомобиль с таким VIN уже существует");
-        }
-        // Обновляем все поля
-        existingCar.setVinNumber(car.getVinNumber());
-        existingCar.setBrand(car.getBrand());
-        existingCar.setModel(car.getModel());
-        existingCar.setYear(car.getYear());
-        existingCar.setColor(car.getColor());
-        existingCar.setPrice(car.getPrice());
-        existingCar.setBodyType(car.getBodyType());
-        existingCar.setEngineVolume(car.getEngineVolume());
-        existingCar.setHorsePower(car.getHorsePower());
-        existingCar.setMileage(car.getMileage());
-        existingCar.setStatus(car.getStatus());
-        existingCar.setDescription(car.getDescription());
-        carDao.update(existingCar);
-        return existingCar;
-    }
-
-    public void deleteCar(Long id) {
-        Car car = getCarById(id);
-        if (car.getStatus() == CarStatus.SOLD) {
-            throw new IllegalStateException("Нельзя удалить проданный автомобиль");
-        }
-        carDao.delete(car);
-    }
-
-    public List<Car> searchCars(String searchText, String brand, CarStatus status) {
-        List<Car> cars = carDao.findAll();
-        return cars.stream()
-                .filter(car -> {
-                    boolean matchesSearch = searchText == null || searchText.isEmpty() ||
-                            car.getVinNumber().toLowerCase().contains(searchText.toLowerCase()) ||
-                            car.getBrand().toLowerCase().contains(searchText.toLowerCase()) ||
-                            car.getModel().toLowerCase().contains(searchText.toLowerCase());
-                    boolean matchesBrand = brand == null || brand.isEmpty() ||
-                            car.getBrand().equals(brand);
-                    boolean matchesStatus = status == null ||
-                            car.getStatus() == status;
-                    return matchesSearch && matchesBrand && matchesStatus;
-                })
-                .collect(Collectors.toList());
-    }
-
-    public List<String> getAllBrands() {
-        return carDao.getAllBrands();
     }
 } 

@@ -1,121 +1,98 @@
 package com.example.javacrm.service;
 
 import com.example.javacrm.model.Deal;
-import com.example.javacrm.model.DealStatus;
-import com.example.javacrm.repository.DealDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-@Service
 public class DealService {
-    private final DealDao dealDao;
+    private static final String DB_URL = "jdbc:h2:./crmdb";
+    private static final String USER = "sa";
+    private static final String PASS = "";
 
-    @Autowired
-    public DealService(DealDao dealDao) {
-        this.dealDao = dealDao;
+    public long getTotalDeals() {
+        String sql = "SELECT COUNT(*) FROM deals";
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    @Transactional
-    public void saveDeal(Deal deal) {
-        dealDao.save(deal);
+    public long getActiveDeals() {
+        String sql = "SELECT COUNT(*) FROM deals WHERE status = 'ACTIVE'";
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
-    @Transactional
-    public void updateDeal(Deal deal) {
-        dealDao.update(deal);
+    public List<Deal> getRecentDeals(int limit) {
+        List<Deal> deals = new ArrayList<>();
+        String sql = "SELECT d.*, c.name as customer_name, car.model as car_model " +
+                    "FROM deals d " +
+                    "JOIN customers c ON d.customer_id = c.id " +
+                    "JOIN cars car ON d.car_id = car.id " +
+                    "ORDER BY d.date DESC LIMIT ?";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, limit);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Deal deal = new Deal();
+                deal.setId(rs.getLong("id"));
+                deal.setCustomerName(rs.getString("customer_name"));
+                deal.setCarModel(rs.getString("car_model"));
+                deal.setAmount(rs.getDouble("amount"));
+                deal.setDate(rs.getDate("date").toLocalDate());
+                deals.add(deal);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return deals;
     }
 
-    @Transactional
-    public void deleteDeal(Deal deal) {
-        dealDao.delete(deal);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Deal> getDealById(Long id) {
-        return dealDao.findById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getAllDeals() {
-        return dealDao.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByStatus(DealStatus status) {
-        return dealDao.findByStatus(status);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByCustomerId(Long customerId) {
-        return dealDao.findByCustomerId(customerId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByCarId(Long carId) {
-        return dealDao.findByCarId(carId);
-    }
-} 
-
-import com.example.javacrm.model.Deal;
-import com.example.javacrm.model.DealStatus;
-import com.example.javacrm.repository.DealDao;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-
-@Service
-public class DealService {
-    private final DealDao dealDao;
-
-    @Autowired
-    public DealService(DealDao dealDao) {
-        this.dealDao = dealDao;
-    }
-
-    @Transactional
-    public void saveDeal(Deal deal) {
-        dealDao.save(deal);
-    }
-
-    @Transactional
-    public void updateDeal(Deal deal) {
-        dealDao.update(deal);
-    }
-
-    @Transactional
-    public void deleteDeal(Deal deal) {
-        dealDao.delete(deal);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Deal> getDealById(Long id) {
-        return dealDao.findById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getAllDeals() {
-        return dealDao.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByStatus(DealStatus status) {
-        return dealDao.findByStatus(status);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByCustomerId(Long customerId) {
-        return dealDao.findByCustomerId(customerId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Deal> getDealsByCarId(Long carId) {
-        return dealDao.findByCarId(carId);
+    public List<Deal> getMonthlyDeals(int months) {
+        List<Deal> deals = new ArrayList<>();
+        String sql = "SELECT d.*, c.name as customer_name, car.model as car_model " +
+                    "FROM deals d " +
+                    "JOIN customers c ON d.customer_id = c.id " +
+                    "JOIN cars car ON d.car_id = car.id " +
+                    "WHERE d.date >= DATEADD('MONTH', ?, CURRENT_DATE) " +
+                    "ORDER BY d.date";
+        
+        try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, -months);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Deal deal = new Deal();
+                deal.setId(rs.getLong("id"));
+                deal.setCustomerName(rs.getString("customer_name"));
+                deal.setCarModel(rs.getString("car_model"));
+                deal.setAmount(rs.getDouble("amount"));
+                deal.setDate(rs.getDate("date").toLocalDate());
+                deals.add(deal);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return deals;
     }
 } 

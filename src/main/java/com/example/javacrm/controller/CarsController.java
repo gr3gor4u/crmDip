@@ -1,106 +1,109 @@
 package com.example.javacrm.controller;
 
 import com.example.javacrm.model.Car;
-import com.example.javacrm.model.CarStatus;
 import com.example.javacrm.service.CarService;
+import com.example.javacrm.service.DatabaseService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import javafx.util.Callback;
+import javafx.scene.control.cell.PropertyValueFactory;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-@Controller
 public class CarsController {
+    @FXML private TableView<Car> carsTable;
+    @FXML private TableColumn<Car, String> modelColumn;
+    @FXML private TableColumn<Car, String> brandColumn;
+    @FXML private TableColumn<Car, Integer> yearColumn;
+    @FXML private TableColumn<Car, Double> priceColumn;
+    @FXML private TableColumn<Car, String> statusColumn;
+    @FXML private TableColumn<Car, Void> actionsColumn;
+    @FXML private TextField modelField;
+    @FXML private TextField brandField;
+    @FXML private TextField yearField;
+    @FXML private TextField priceField;
+    @FXML private ComboBox<String> statusComboBox;
 
-    @Autowired
-    private CarService carService;
+    private final CarService carService;
+    private final ObservableList<Car> cars = FXCollections.observableArrayList();
 
-    @FXML
-    private TableView<Car> carsTable;
-    @FXML
-    private TableColumn<Car, String> vinColumn;
-    @FXML
-    private TableColumn<Car, String> brandColumn;
-    @FXML
-    private TableColumn<Car, String> modelColumn;
-    @FXML
-    private TableColumn<Car, Integer> yearColumn;
-    @FXML
-    private TableColumn<Car, String> colorColumn;
-    @FXML
-    private TableColumn<Car, BigDecimal> priceColumn;
-    @FXML
-    private TableColumn<Car, CarStatus> statusColumn;
-    @FXML
-    private TableColumn<Car, Integer> mileageColumn;
-    @FXML
-    private TableColumn<Car, Void> actionsColumn;
-
-    @FXML
-    private TextField searchField;
-    @FXML
-    private ComboBox<String> brandFilter;
-    @FXML
-    private ComboBox<CarStatus> statusFilter;
-
-    @FXML
-    private Dialog<Car> carDialog;
-    @FXML
-    private TextField vinField;
-    @FXML
-    private TextField brandField;
-    @FXML
-    private TextField modelField;
-    @FXML
-    private TextField yearField;
-    @FXML
-    private TextField colorField;
-    @FXML
-    private TextField priceField;
-    @FXML
-    private TextField bodyTypeField;
-    @FXML
-    private TextField engineVolumeField;
-    @FXML
-    private TextField horsePowerField;
-    @FXML
-    private TextField mileageField;
-    @FXML
-    private ComboBox<CarStatus> statusField;
-    @FXML
-    private TextArea descriptionField;
-
-    private ObservableList<Car> cars = FXCollections.observableArrayList();
+    public CarsController() {
+        this.carService = new CarService(DatabaseService.getInstance());
+    }
 
     @FXML
     public void initialize() {
-        // Инициализация таблицы
-        vinColumn.setCellValueFactory(new PropertyValueFactory<>("vinNumber"));
-        brandColumn.setCellValueFactory(new PropertyValueFactory<>("brand"));
+        setupTableColumns();
+        setupStatusComboBox();
+        loadCars();
+    }
+
+    private void setupTableColumns() {
         modelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
-        yearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
-        colorColumn.setCellValueFactory(new PropertyValueFactory<>("color"));
+        brandColumn.setCellValueFactory(new PropertyValueFactory<>("brand"));
+        yearColumn.setCellValueFactory(new PropertyValueFactory<>("carYear"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        mileageColumn.setCellValueFactory(new PropertyValueFactory<>("mileage"));
 
-        // Добавление кнопок действий
-        actionsColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button editButton = new Button("✎");
-            private final Button deleteButton = new Button("✕");
+        // Настройка отображения статуса с цветом
+        statusColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String status, boolean empty) {
+                super.updateItem(status, empty);
+                if (empty || status == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(status);
+                    switch (status) {
+                        case "AVAILABLE":
+                            setTextFill(Color.GREEN);
+                            break;
+                        case "NOT_AVAILABLE":
+                            setTextFill(Color.ORANGE);
+                            break;
+                        case "SOLD":
+                            setTextFill(Color.RED);
+                            break;
+                    }
+                }
+            }
+        });
+
+        // Настройка кнопок действий
+        actionsColumn.setCellFactory(createActionButtonsCellFactory());
+
+        // Настройка стиля строк в зависимости от статуса
+        carsTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(Car car, boolean empty) {
+                super.updateItem(car, empty);
+                if (car == null || empty) {
+                    setStyle("");
+                } else if ("SOLD".equals(car.getStatus())) {
+                    setStyle("-fx-background-color: #eeeeee; -fx-text-fill: #888888;");
+                } else if ("NOT_AVAILABLE".equals(car.getStatus())) {
+                    setStyle("-fx-opacity: 0.5;");
+                } else {
+                    setStyle("");
+                }
+            }
+        });
+    }
+
+    private Callback<TableColumn<Car, Void>, TableCell<Car, Void>> createActionButtonsCellFactory() {
+        return column -> new TableCell<>() {
+            private final Button editButton = new Button("Изменить статус");
+            private final Button deleteButton = new Button("Удалить");
 
             {
                 editButton.setOnAction(event -> {
                     Car car = getTableView().getItems().get(getIndex());
-                    showEditCarDialog(car);
+                    showStatusChangeDialog(car);
                 });
 
                 deleteButton.setOnAction(event -> {
@@ -119,159 +122,124 @@ public class CarsController {
                     setGraphic(buttons);
                 }
             }
+        };
+    }
+
+    private void setupStatusComboBox() {
+        statusComboBox.setItems(FXCollections.observableArrayList(
+            "AVAILABLE", "NOT_AVAILABLE", "SOLD"
+        ));
+        statusComboBox.getSelectionModel().selectFirst();
+    }
+
+    private void loadCars() {
+        cars.clear();
+        cars.addAll(carService.getAllCars());
+        carsTable.setItems(cars);
+    }
+
+    @FXML
+    private void handleAddCar() {
+        // Очищаем поля
+        modelField.clear();
+        brandField.clear();
+        yearField.clear();
+        priceField.clear();
+        statusComboBox.getSelectionModel().selectFirst();
+
+        // Создаём кастомный диалог
+        Dialog<Car> dialog = new Dialog<>();
+        dialog.setTitle("Добавить автомобиль");
+        
+        // Создаём контент диалога
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        grid.add(new Label("Модель:"), 0, 0);
+        grid.add(modelField, 1, 0);
+        grid.add(new Label("Марка:"), 0, 1);
+        grid.add(brandField, 1, 1);
+        grid.add(new Label("Год:"), 0, 2);
+        grid.add(yearField, 1, 2);
+        grid.add(new Label("Цена:"), 0, 3);
+        grid.add(priceField, 1, 3);
+        grid.add(new Label("Статус:"), 0, 4);
+        grid.add(statusComboBox, 1, 4);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                try {
+                    String model = modelField.getText();
+                    String brand = brandField.getText();
+                    int year = Integer.parseInt(yearField.getText());
+                    double price = Double.parseDouble(priceField.getText());
+                    String status = statusComboBox.getValue();
+
+                    if (model.isEmpty() || brand.isEmpty()) {
+                        showError("Ошибка", "Пожалуйста, заполните все поля");
+                        return null;
+                    }
+
+                    return new Car(null, model, brand, year, price, status);
+                } catch (NumberFormatException e) {
+                    showError("Ошибка", "Пожалуйста, введите корректные числовые значения для года и цены");
+                    return null;
+                }
+            }
+            return null;
         });
 
-        // Инициализация фильтров
-        brandFilter.setItems(FXCollections.observableArrayList(carService.getAllBrands()));
-        statusFilter.setItems(FXCollections.observableArrayList(CarStatus.values()));
-        statusField.setItems(FXCollections.observableArrayList(CarStatus.values()));
-
-        // Загрузка данных
-        refreshCars();
-    }
-
-    @FXML
-    private void searchCars() {
-        String searchText = searchField.getText();
-        String brand = brandFilter.getValue();
-        CarStatus status = statusFilter.getValue();
-
-        List<Car> filteredCars = carService.searchCars(searchText, brand, status);
-        cars.setAll(filteredCars);
-    }
-
-    @FXML
-    private void resetSearch() {
-        searchField.clear();
-        brandFilter.setValue(null);
-        statusFilter.setValue(null);
-        refreshCars();
-    }
-
-    @FXML
-    private void showAddCarDialog() {
-        carDialog.setTitle("Добавить автомобиль");
-        clearDialogFields();
-        
-        Optional<ButtonType> result = carDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Car car = createCarFromDialog();
-                carService.createCar(car);
-                refreshCars();
-            } catch (Exception e) {
-                showError("Ошибка при создании автомобиля", e.getMessage());
+        dialog.showAndWait().ifPresent(car -> {
+            if (car != null) {
+                carService.addCar(car);
+                loadCars();
             }
-        }
+        });
     }
 
-    private void showEditCarDialog(Car car) {
-        carDialog.setTitle("Редактировать автомобиль");
-        fillDialogFields(car);
-        
-        Optional<ButtonType> result = carDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Car updatedCar = createCarFromDialog();
-                updatedCar.setId(car.getId());
-                carService.updateCar(car.getId(), updatedCar);
-                refreshCars();
-            } catch (Exception e) {
-                showError("Ошибка при обновлении автомобиля", e.getMessage());
+    private void showStatusChangeDialog(Car car) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Изменить статус");
+        dialog.setHeaderText("Выберите новый статус для автомобиля " + car.getBrand() + " " + car.getModel());
+
+        ComboBox<String> statusBox = new ComboBox<>(FXCollections.observableArrayList(
+            "AVAILABLE", "NOT_AVAILABLE", "SOLD"
+        ));
+        statusBox.setValue(car.getStatus());
+
+        dialog.getDialogPane().setContent(statusBox);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                return statusBox.getValue();
             }
-        }
-    }
+            return null;
+        });
 
-    private Car createCarFromDialog() {
-        Car car = new Car();
-        car.setVinNumber(vinField.getText());
-        car.setBrand(brandField.getText());
-        car.setModel(modelField.getText());
-        car.setYear(Integer.parseInt(yearField.getText()));
-        car.setColor(colorField.getText());
-        car.setPrice(new BigDecimal(priceField.getText()));
-        car.setBodyType(bodyTypeField.getText());
-        car.setEngineVolume(Double.parseDouble(engineVolumeField.getText()));
-        car.setHorsePower(Integer.parseInt(horsePowerField.getText()));
-        car.setMileage(Integer.parseInt(mileageField.getText()));
-        car.setStatus(statusField.getValue());
-        car.setDescription(descriptionField.getText());
-        return car;
+        dialog.showAndWait().ifPresent(newStatus -> {
+            carService.updateCarStatus(car.getId(), newStatus);
+            loadCars();
+        });
     }
 
     private void deleteCar(Car car) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Подтверждение удаления");
-        alert.setHeaderText("Удалить автомобиль?");
-        alert.setContentText("Вы уверены, что хотите удалить автомобиль " + car.getBrand() + " " + car.getModel() + "?");
+        alert.setHeaderText("Удалить автомобиль " + car.getBrand() + " " + car.getModel() + "?");
+        alert.setContentText("Это действие нельзя отменить.");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
                 carService.deleteCar(car.getId());
-                refreshCars();
-            } catch (Exception e) {
-                showError("Ошибка при удалении автомобиля", e.getMessage());
+                loadCars();
             }
-        }
-    }
-
-    private void refreshCars() {
-        List<Car> allCars = carService.getAllCars();
-        cars.setAll(allCars);
-        carsTable.setItems(cars);
-    }
-
-    private void clearDialogFields() {
-        vinField.clear();
-        brandField.clear();
-        modelField.clear();
-        yearField.clear();
-        colorField.clear();
-        priceField.clear();
-        bodyTypeField.clear();
-        engineVolumeField.clear();
-        horsePowerField.clear();
-        mileageField.clear();
-        statusField.setValue(CarStatus.AVAILABLE);
-        descriptionField.clear();
-    }
-
-    private void fillDialogFields(Car car) {
-        vinField.setText(car.getVinNumber());
-        brandField.setText(car.getBrand());
-        modelField.setText(car.getModel());
-        yearField.setText(String.valueOf(car.getYear()));
-        colorField.setText(car.getColor());
-        priceField.setText(car.getPrice().toString());
-        bodyTypeField.setText(car.getBodyType());
-        engineVolumeField.setText(car.getEngineVolume().toString());
-        horsePowerField.setText(String.valueOf(car.getHorsePower()));
-        mileageField.setText(String.valueOf(car.getMileage()));
-        statusField.setValue(car.getStatus());
-        descriptionField.setText(car.getDescription());
-    }
-
-    private void showError(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
-    }
-} 
-        vinField.setText(car.getVinNumber());
-        brandField.setText(car.getBrand());
-        modelField.setText(car.getModel());
-        yearField.setText(String.valueOf(car.getYear()));
-        colorField.setText(car.getColor());
-        priceField.setText(car.getPrice().toString());
-        bodyTypeField.setText(car.getBodyType());
-        engineVolumeField.setText(car.getEngineVolume().toString());
-        horsePowerField.setText(String.valueOf(car.getHorsePower()));
-        mileageField.setText(String.valueOf(car.getMileage()));
-        statusField.setValue(car.getStatus());
-        descriptionField.setText(car.getDescription());
+        });
     }
 
     private void showError(String title, String content) {

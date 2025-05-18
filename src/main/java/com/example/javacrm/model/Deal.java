@@ -1,106 +1,62 @@
 package com.example.javacrm.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.Data;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalDate;
 
-@Data
-@Entity
-@Table(name = "deals")
 public class Deal {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_dogovor")
     private Long id;
+    private String customerName;
+    private String carModel;
+    private Double amount;
+    private LocalDate date;
 
-    @NotNull(message = "Дата не может быть пустой")
-    @Column(name = "data")
-    private LocalDateTime date;
-
-    @NotNull(message = "Цена не может быть пустой")
-    @DecimalMin(value = "0.0", message = "Цена должна быть положительной")
-    @Column(name = "price")
-    private BigDecimal price;
-
-    @NotNull(message = "Клиент не может быть пустым")
-    @ManyToOne
-    @JoinColumn(name = "id_chelovek")
-    private Customer customer;
-
-    @NotNull(message = "Автомобиль не может быть пустым")
-    @OneToOne
-    @JoinColumn(name = "vin_number")
-    private Car car;
-
-    @OneToOne
-    @JoinColumn(name = "vin_number_trade")
-    private TradeInCar tradeInCar;
-
-    @OneToMany(mappedBy = "deal", cascade = CascadeType.ALL)
-    private List<DealAdditionalEquipment> additionalEquipment;
-
-    @NotNull(message = "Первоначальный взнос не может быть пустым")
-    @DecimalMin(value = "0.0", message = "Первоначальный взнос должен быть положительным")
-    @Column(name = "down_payment")
-    private BigDecimal downPayment;
-
-    @Column(name = "notes")
-    private String notes;
-
-    @NotNull(message = "Статус не может быть пустым")
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private DealStatus status;
-
-    @Column(name = "test_drive_date")
-    private LocalDateTime testDriveDate;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (date == null) {
-            date = LocalDateTime.now();
-        }
+    public Deal() {
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public Deal(Long id, String customerName, String carModel, Double amount, LocalDate date) {
+        this.id = id;
+        this.customerName = customerName;
+        this.carModel = carModel;
+        this.amount = amount;
+        this.date = date;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public Customer getCustomer() { return customer; }
-    public void setCustomer(Customer customer) { this.customer = customer; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Car getCar() { return car; }
-    public void setCar(Car car) { this.car = car; }
+    public String getCustomerName() {
+        return customerName;
+    }
 
-    public BigDecimal getAmount() { return price; }
-    public void setAmount(BigDecimal amount) { this.price = amount; }
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
 
-    public BigDecimal getDownPayment() { return downPayment; }
-    public void setDownPayment(BigDecimal downPayment) { this.downPayment = downPayment; }
+    public String getCarModel() {
+        return carModel;
+    }
 
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public void setCarModel(String carModel) {
+        this.carModel = carModel;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Double getAmount() {
+        return amount;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-} 
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
 } 

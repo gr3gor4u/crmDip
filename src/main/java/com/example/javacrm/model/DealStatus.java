@@ -7,11 +7,3 @@ public enum DealStatus {
     CANCELLED,
     PENDING_PAYMENT
 } 
-
-public enum DealStatus {
-    NEW,
-    IN_PROGRESS,
-    COMPLETED,
-    CANCELLED,
-    PENDING_PAYMENT
-} 

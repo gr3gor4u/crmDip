@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <!-- Database connection settings -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/dealership_crm</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">postgres</property>
+
+        <!-- SQL dialect -->
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+
+        <!-- Echo all executed SQL to stdout -->
+        <property name="hibernate.show_sql">true</property>
+
+        <!-- Drop and re-create the database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <!-- Names the annotated entity class -->
+        <mapping class="com.example.javacrm.model.User"/>
+        <mapping class="com.example.javacrm.model.Car"/>
+        <mapping class="com.example.javacrm.model.Customer"/>
+        <mapping class="com.example.javacrm.model.Deal"/>
+        <mapping class="com.example.javacrm.model.ServiceRecord"/>
+        <mapping class="com.example.javacrm.model.TradeInCar"/>
+        <mapping class="com.example.javacrm.model.AdditionalEquipment"/>
+        <mapping class="com.example.javacrm.model.DealAdditionalEquipment"/>
+    </session-factory>
+</hibernate-configuration> 

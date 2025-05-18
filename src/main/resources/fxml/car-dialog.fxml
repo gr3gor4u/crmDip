@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.javacrm.controller.CarDialogController"
+            styleClass="dialog-pane">
+    
+    <content>
+        <GridPane hgap="10" vgap="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <Label text="Марка:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <TextField fx:id="brandField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Модель:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <TextField fx:id="modelField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+            <Label text="Год:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <TextField fx:id="yearField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+            <Label text="VIN:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <TextField fx:id="vinField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+            <Label text="Цвет:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+            <TextField fx:id="colorField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+            <Label text="Цена:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+            <TextField fx:id="priceField" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+
+            <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+            <ComboBox fx:id="statusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+
+            <Label text="Описание:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+            <TextArea fx:id="descriptionArea" prefRowCount="3" wrapText="true" 
+                     GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane> 

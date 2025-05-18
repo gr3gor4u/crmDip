@@ -1,83 +1,39 @@
 package com.example.javacrm;
 
+import com.example.javacrm.controller.LoginController;
+import com.example.javacrm.service.DatabaseService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 
-@SpringBootApplication
 public class JavaCrmApplication extends Application {
+    private DatabaseService databaseService;
 
-    private ConfigurableApplicationContext springContext;
-    private Parent rootNode;
-
-    public static void main(String[] args) {
-        launch(args);
+    @Override
+    public void init() {
+        databaseService = DatabaseService.getInstance();
     }
 
     @Override
-    public void init() throws Exception {
-        springContext = SpringApplication.run(JavaCrmApplication.class);
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/cars.fxml"));
-        fxmlLoader.setControllerFactory(springContext::getBean);
-        rootNode = fxmlLoader.load();
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Автосалон CRM");
-        Scene scene = new Scene(rootNode);
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
+        Parent root = loader.load();
+        
+        LoginController controller = loader.getController();
+        controller.setDatabaseService(databaseService);
+        controller.setStage(primaryStage);
+        
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
+        
+        primaryStage.setTitle("CarStore CRM");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    @Override
-    public void stop() {
-        springContext.close();
-    }
-} 
-
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-
-@SpringBootApplication
-public class JavaCrmApplication extends Application {
-
-    private ConfigurableApplicationContext springContext;
-    private Parent rootNode;
-
     public static void main(String[] args) {
         launch(args);
-    }
-
-    @Override
-    public void init() throws Exception {
-        springContext = SpringApplication.run(JavaCrmApplication.class);
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/cars.fxml"));
-        fxmlLoader.setControllerFactory(springContext::getBean);
-        rootNode = fxmlLoader.load();
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Автосалон CRM");
-        Scene scene = new Scene(rootNode);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
-
-    @Override
-    public void stop() {
-        springContext.close();
     }
 } 

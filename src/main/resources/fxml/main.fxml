@@ -3,50 +3,33 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.example.javacrm.controller.MainController"
-            stylesheets="@/styles/main.css">
-    
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.MainController">
     <top>
-        <HBox styleClass="header">
+        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="10">
             <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
+                <Insets top="10" right="20" bottom="10" left="20"/>
             </padding>
-            <Label text="Car Dealership CRM" styleClass="header-title"/>
+            <Label text="CarsStore" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="userLabel" text="Пользователь: "/>
             <Button text="Выйти" onAction="#handleLogout"/>
         </HBox>
     </top>
     
     <left>
-        <VBox styleClass="sidebar">
+        <VBox styleClass="sidebar" spacing="5">
             <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
+                <Insets top="20" right="10" bottom="20" left="10"/>
             </padding>
-            <Button text="Дашборд" onAction="#showDashboard" styleClass="sidebar-button"/>
-            <Button text="Клиенты" onAction="#showCustomers" styleClass="sidebar-button"/>
-            <Button text="Автомобили" onAction="#showCars" styleClass="sidebar-button"/>
-            <Button text="Сделки" onAction="#showDeals" styleClass="sidebar-button"/>
-            <Button text="Сервис" onAction="#showService" styleClass="sidebar-button"/>
-            <Button text="Отчеты" onAction="#showReports" styleClass="sidebar-button"/>
+            <Button text="Дашборд" styleClass="sidebar-button" onAction="#showDashboard" fx:id="dashboardButton"/>
+            <Button text="Автомобили" styleClass="sidebar-button" onAction="#handleCars" fx:id="carsButton"/>
+            <Button text="Клиенты" styleClass="sidebar-button" onAction="#handleCustomers" fx:id="customersButton"/>
+            <Button text="Сделки" styleClass="sidebar-button" onAction="#handleDeals" fx:id="dealsButton"/>
+            <Button text="Отчеты" styleClass="sidebar-button" onAction="#handleReports" fx:id="reportsButton"/>
         </VBox>
     </left>
     
     <center>
-        <StackPane fx:id="contentArea">
-            <!-- Content will be loaded dynamically -->
-        </StackPane>
+        <StackPane fx:id="contentArea"/>
     </center>
-    
-    <bottom>
-        <HBox styleClass="footer">
-            <padding>
-                <Insets top="5" right="10" bottom="5" left="10"/>
-            </padding>
-            <Label text="© 2024 Car Dealership CRM" styleClass="footer-text"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Label fx:id="statusLabel" text="Готов к работе" styleClass="footer-text"/>
-        </HBox>
-    </bottom>
 </BorderPane> 

@@ -7,20 +7,25 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.example.javacrm.controller.DealsController"
-      spacing="20">
+      spacing="10" styleClass="content-pane">
     
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Сделки" style="-fx-font-size: 20px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Поиск..." prefWidth="200"/>
+        <Button text="Добавить" onAction="#handleAddDeal"/>
+    </HBox>
+
     <!-- Фильтры и поиск -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search deals..." prefWidth="300"/>
-        <ComboBox fx:id="statusFilter" promptText="Status"/>
-        <DatePicker fx:id="startDate" promptText="Start Date"/>
-        <DatePicker fx:id="endDate" promptText="End Date"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="New Deal" onAction="#showAddDealDialog" styleClass="action-button"/>
+        <TextField fx:id="searchField" promptText="Поиск сделок..." HBox.hgrow="ALWAYS"/>
+        <ComboBox fx:id="statusFilter" promptText="Статус сделки"/>
+        <Button text="Поиск" onAction="#handleSearch"/>
+        <Button text="Новая сделка" onAction="#handleAddDeal" styleClass="button-primary"/>
     </HBox>
 
     <!-- Статистика сделок -->
@@ -44,13 +49,13 @@
     <!-- Таблица сделок -->
     <TableView fx:id="dealsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn text="ID" fx:id="idColumn"/>
-            <TableColumn text="Customer" fx:id="customerColumn"/>
-            <TableColumn text="Car" fx:id="carColumn"/>
-            <TableColumn text="Date" fx:id="dateColumn"/>
-            <TableColumn text="Price" fx:id="priceColumn"/>
-            <TableColumn text="Status" fx:id="statusColumn"/>
-            <TableColumn text="Actions" fx:id="actionsColumn"/>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="customerColumn" text="Клиент" prefWidth="150"/>
+            <TableColumn fx:id="carColumn" text="Автомобиль" prefWidth="150"/>
+            <TableColumn fx:id="amountColumn" text="Сумма" prefWidth="100"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
+            <TableColumn fx:id="dateColumn" text="Дата" prefWidth="120"/>
+            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="200"/>
         </columns>
     </TableView>
 
