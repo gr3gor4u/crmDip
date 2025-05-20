@@ -1,6 +1,7 @@
 package com.example.javacrm.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class Insurance {
     private Long id;
@@ -11,6 +12,8 @@ public class Insurance {
     private Double price;
     private String status;
     private LocalDateTime createdAt;
+    private LocalDate startDate;
+    private LocalDate endDate;
     
     // Relationships
     private Customer customer;
@@ -115,5 +118,21 @@ public class Insurance {
         if (car != null) {
             this.carVin = car.getVin();
         }
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
     }
 } 

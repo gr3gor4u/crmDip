@@ -5,6 +5,8 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public class CarService {
     private final DatabaseService databaseService;
@@ -205,5 +207,22 @@ public class CarService {
         }
         
         return cars;
+    }
+    
+    public ObservableList<String> getAllCarVins() {
+        List<String> vins = new ArrayList<>();
+        String query = "SELECT vin FROM cars WHERE status = 'available'";
+        
+        try (Connection conn = databaseService.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            while (rs.next()) {
+                vins.add(rs.getString("vin"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return FXCollections.observableArrayList(vins);
     }
 } 
