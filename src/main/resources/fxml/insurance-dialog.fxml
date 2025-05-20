@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.InsuranceDialogController">
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <GridPane vgap="10" hgap="10">
+        <Label text="ID клиента:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="customerIdField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <Label text="VIN автомобиля:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="carVinField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+        <Label text="Тип страховки:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="insuranceTypeComboBox" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <Label text="Дата начала:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <DatePicker fx:id="startDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+        <Label text="Дата окончания:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <DatePicker fx:id="expiryDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+        <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <ComboBox fx:id="statusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="OK" onAction="#handleOK"/>
+        <Button text="Отмена" onAction="#handleCancel"/>
+    </HBox>
+</VBox> 

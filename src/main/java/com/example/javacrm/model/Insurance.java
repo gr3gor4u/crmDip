@@ -1,138 +1,104 @@
 package com.example.javacrm.model;
 
-import java.time.LocalDateTime;
+import javafx.beans.property.*;
 import java.time.LocalDate;
 
 public class Insurance {
-    private Long id;
-    private String carVin;
-    private Long customerId;
-    private String insuranceType;
-    private String insuranceNumber;
-    private Double price;
-    private String status;
-    private LocalDateTime createdAt;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private final LongProperty id = new SimpleLongProperty();
+    private final StringProperty insuranceNumber = new SimpleStringProperty();
+    private final LongProperty customerId = new SimpleLongProperty();
+    private final StringProperty carVin = new SimpleStringProperty();
+    private final ObjectProperty<InsuranceType> insuranceType = new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
+    private final ObjectProperty<LocalDate> expiryDate = new SimpleObjectProperty<>();
+    private final StringProperty status = new SimpleStringProperty();
     
-    // Relationships
-    private Customer customer;
-    private Car car;
+    // Дополнительные поля для отображения
+    private String customerFirstName;
+    private String customerLastName;
+    private String carBrand;
+    private String carModel;
+
+    public enum InsuranceType {
+        КАСКО, ОСАГО
+    }
 
     public Insurance() {
-        this.createdAt = LocalDateTime.now();
+        this.status.set("Активна");
     }
 
-    public Insurance(Long id, String carVin, Long customerId, String insuranceType, String insuranceNumber, Double price, String status) {
-        this.id = id;
-        this.carVin = carVin;
-        this.customerId = customerId;
-        this.insuranceType = insuranceType;
-        this.insuranceNumber = insuranceNumber;
-        this.price = price;
-        this.status = status;
-        this.createdAt = LocalDateTime.now();
-    }
+    public long getId() { return id.get(); }
+    public void setId(long id) { this.id.set(id); }
+    public LongProperty idProperty() { return id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getInsuranceNumber() { return insuranceNumber.get(); }
+    public void setInsuranceNumber(String insuranceNumber) { this.insuranceNumber.set(insuranceNumber); }
+    public StringProperty insuranceNumberProperty() { return insuranceNumber; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public long getCustomerId() { return customerId.get(); }
+    public void setCustomerId(long customerId) { this.customerId.set(customerId); }
+    public LongProperty customerIdProperty() { return customerId; }
 
-    public String getCarVin() {
-        return carVin;
-    }
+    public String getCarVin() { return carVin.get(); }
+    public void setCarVin(String carVin) { this.carVin.set(carVin); }
+    public StringProperty carVinProperty() { return carVin; }
 
-    public void setCarVin(String carVin) {
-        this.carVin = carVin;
-    }
+    public InsuranceType getInsuranceType() { return insuranceType.get(); }
+    public void setInsuranceType(InsuranceType insuranceType) { this.insuranceType.set(insuranceType); }
+    public ObjectProperty<InsuranceType> insuranceTypeProperty() { return insuranceType; }
 
-    public Long getCustomerId() {
-        return customerId;
-    }
+    public LocalDate getStartDate() { return startDate.get(); }
+    public void setStartDate(LocalDate startDate) { this.startDate.set(startDate); }
+    public ObjectProperty<LocalDate> startDateProperty() { return startDate; }
 
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getInsuranceType() {
-        return insuranceType;
-    }
-
-    public void setInsuranceType(String insuranceType) {
-        this.insuranceType = insuranceType;
-    }
-
-    public String getInsuranceNumber() {
-        return insuranceNumber;
-    }
-
-    public void setInsuranceNumber(String insuranceNumber) {
-        this.insuranceNumber = insuranceNumber;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
+    public LocalDate getExpiryDate() { return expiryDate.get(); }
+    public void setExpiryDate(LocalDate expiryDate) { this.expiryDate.set(expiryDate); }
+    public ObjectProperty<LocalDate> expiryDateProperty() { return expiryDate; }
 
     public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-        if (customer != null) {
-            this.customerId = customer.getId();
+        if (expiryDate.get() != null && LocalDate.now().isAfter(expiryDate.get())) {
+            return "Истекла";
         }
+        return status.get();
+    }
+    public void setStatus(String status) { this.status.set(status); }
+    public StringProperty statusProperty() { return status; }
+
+    // Геттеры и сеттеры для дополнительных полей
+    public String getCustomerFirstName() {
+        return customerFirstName;
     }
 
-    public Car getCar() {
-        return car;
+    public void setCustomerFirstName(String customerFirstName) {
+        this.customerFirstName = customerFirstName;
     }
 
-    public void setCar(Car car) {
-        this.car = car;
-        if (car != null) {
-            this.carVin = car.getVin();
-        }
+    public String getCustomerLastName() {
+        return customerLastName;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
+    public void setCustomerLastName(String customerLastName) {
+        this.customerLastName = customerLastName;
     }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+    public String getCarBrand() {
+        return carBrand;
     }
 
-    public LocalDate getEndDate() {
-        return endDate;
+    public void setCarBrand(String carBrand) {
+        this.carBrand = carBrand;
     }
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
+    public String getCarModel() {
+        return carModel;
+    }
+
+    public void setCarModel(String carModel) {
+        this.carModel = carModel;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s - %s", insuranceNumber.get(), insuranceType.get());
     }
 } 

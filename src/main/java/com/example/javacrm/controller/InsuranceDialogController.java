@@ -1,99 +1,60 @@
 package com.example.javacrm.controller;
 
 import com.example.javacrm.model.Insurance;
-import com.example.javacrm.model.Customer;
-import com.example.javacrm.service.InsuranceService;
-import com.example.javacrm.service.CustomerService;
-import com.example.javacrm.service.CarService;
-import com.example.javacrm.service.DatabaseService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import java.time.LocalDate;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 public class InsuranceDialogController {
     @FXML
-    private ComboBox<String> carVinComboBox;
+    private TextField customerIdField;
     @FXML
-    private ComboBox<Customer> customerComboBox;
+    private TextField carVinField;
     @FXML
-    private ComboBox<String> insuranceTypeComboBox;
-    @FXML
-    private TextField insuranceNumberField;
-    @FXML
-    private TextField priceField;
+    private ComboBox<Insurance.InsuranceType> insuranceTypeComboBox;
     @FXML
     private DatePicker startDatePicker;
     @FXML
-    private DatePicker endDatePicker;
+    private DatePicker expiryDatePicker;
     @FXML
-    private Button okButton;
-    @FXML
-    private Button cancelButton;
+    private ComboBox<String> statusComboBox;
 
+    private Stage dialogStage;
     private Insurance insurance;
     private boolean okClicked = false;
-    private InsuranceService insuranceService;
-    private CustomerService customerService;
-    private CarService carService;
 
     @FXML
     private void initialize() {
-        DatabaseService databaseService = DatabaseService.getInstance();
-        customerService = new CustomerService(databaseService);
-        carService = new CarService(databaseService);
-        insuranceService = new InsuranceService(databaseService, customerService, carService);
-
-        insuranceTypeComboBox.getItems().addAll("ОСАГО", "КАСКО", "ДСАГО");
+        insuranceTypeComboBox.getItems().addAll(Insurance.InsuranceType.values());
+        insuranceTypeComboBox.setValue(Insurance.InsuranceType.ОСАГО);
         
-        loadCustomers();
-        loadCars();
+        statusComboBox.getItems().addAll("Активна", "Истекла");
+        statusComboBox.setValue("Активна");
         
-        // Устанавливаем текущую дату как минимальную для startDatePicker
         startDatePicker.setValue(LocalDate.now());
+        expiryDatePicker.setValue(LocalDate.now().plusYears(1));
         
-        // Устанавливаем валидацию для priceField
-        priceField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*\\.?\\d*")) {
-                priceField.setText(oldVal);
+        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                expiryDatePicker.setValue(newVal.plusYears(1));
             }
         });
     }
 
-    private void loadCustomers() {
-        ObservableList<Customer> customers = FXCollections.observableArrayList(customerService.getAllCustomers());
-        customerComboBox.setItems(customers);
-        customerComboBox.setCellFactory(param -> new ListCell<Customer>() {
-            @Override
-            protected void updateItem(Customer customer, boolean empty) {
-                super.updateItem(customer, empty);
-                if (empty || customer == null) {
-                    setText(null);
-                } else {
-                    setText(customer.getFullName());
-                }
-            }
-        });
-    }
-
-    private void loadCars() {
-        carVinComboBox.setItems(carService.getAllCarVins());
+    public void setDialogStage(Stage dialogStage) {
+        this.dialogStage = dialogStage;
     }
 
     public void setInsurance(Insurance insurance) {
         this.insurance = insurance;
-
-        if (insurance != null) {
-            carVinComboBox.setValue(insurance.getCarVin());
-            customerComboBox.setValue(customerService.getCustomerById(insurance.getCustomerId()));
-            insuranceTypeComboBox.setValue(insurance.getInsuranceType());
-            insuranceNumberField.setText(insurance.getInsuranceNumber());
-            priceField.setText(String.valueOf(insurance.getPrice()));
-            startDatePicker.setValue(insurance.getStartDate());
-            endDatePicker.setValue(insurance.getEndDate());
-        }
+        
+        customerIdField.setText(String.valueOf(insurance.getCustomerId()));
+        carVinField.setText(insurance.getCarVin());
+        insuranceTypeComboBox.setValue(insurance.getInsuranceType());
+        startDatePicker.setValue(insurance.getStartDate());
+        expiryDatePicker.setValue(insurance.getExpiryDate());
+        statusComboBox.setValue(insurance.getStatus());
     }
 
     public boolean isOkClicked() {
@@ -101,56 +62,64 @@ public class InsuranceDialogController {
     }
 
     @FXML
-    private void handleOk() {
+    private void handleOK() {
         if (isInputValid()) {
-            insurance.setCarVin(carVinComboBox.getValue());
-            insurance.setCustomerId(customerComboBox.getValue().getId());
+            insurance.setCustomerId(Long.parseLong(customerIdField.getText()));
+            insurance.setCarVin(carVinField.getText());
             insurance.setInsuranceType(insuranceTypeComboBox.getValue());
-            insurance.setInsuranceNumber(insuranceNumberField.getText());
-            insurance.setPrice(Double.parseDouble(priceField.getText()));
             insurance.setStartDate(startDatePicker.getValue());
-            insurance.setEndDate(endDatePicker.getValue());
-
+            insurance.setExpiryDate(expiryDatePicker.getValue());
+            insurance.setStatus(statusComboBox.getValue());
+            
             okClicked = true;
-            closeDialog();
+            dialogStage.close();
         }
     }
 
     @FXML
     private void handleCancel() {
-        closeDialog();
+        dialogStage.close();
     }
 
     private boolean isInputValid() {
         String errorMessage = "";
 
-        if (carVinComboBox.getValue() == null) {
-            errorMessage += "Выберите автомобиль!\n";
+        if (customerIdField.getText() == null || customerIdField.getText().isEmpty()) {
+            errorMessage += "ID клиента не может быть пустым!\n";
+        } else {
+            try {
+                Long.parseLong(customerIdField.getText());
+            } catch (NumberFormatException e) {
+                errorMessage += "ID клиента должен быть числом!\n";
+            }
         }
-        if (customerComboBox.getValue() == null) {
-            errorMessage += "Выберите клиента!\n";
+
+        if (carVinField.getText() == null || carVinField.getText().isEmpty()) {
+            errorMessage += "VIN автомобиля не может быть пустым!\n";
         }
+
         if (insuranceTypeComboBox.getValue() == null) {
-            errorMessage += "Выберите тип страховки!\n";
+            errorMessage += "Тип страховки не может быть пустым!\n";
         }
-        if (insuranceNumberField.getText() == null || insuranceNumberField.getText().length() == 0) {
-            errorMessage += "Введите номер страховки!\n";
-        }
-        if (priceField.getText() == null || priceField.getText().length() == 0) {
-            errorMessage += "Введите стоимость!\n";
-        }
+
         if (startDatePicker.getValue() == null) {
-            errorMessage += "Выберите дату начала!\n";
+            errorMessage += "Дата начала не может быть пустой!\n";
         }
-        if (endDatePicker.getValue() == null) {
-            errorMessage += "Выберите дату окончания!\n";
+
+        if (expiryDatePicker.getValue() == null) {
+            errorMessage += "Дата окончания не может быть пустой!\n";
         }
-        if (startDatePicker.getValue() != null && endDatePicker.getValue() != null &&
-            startDatePicker.getValue().isAfter(endDatePicker.getValue())) {
+
+        if (startDatePicker.getValue() != null && expiryDatePicker.getValue() != null &&
+            startDatePicker.getValue().isAfter(expiryDatePicker.getValue())) {
             errorMessage += "Дата начала не может быть позже даты окончания!\n";
         }
 
-        if (errorMessage.length() == 0) {
+        if (statusComboBox.getValue() == null) {
+            errorMessage += "Статус не может быть пустым!\n";
+        }
+
+        if (errorMessage.isEmpty()) {
             return true;
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -160,10 +129,5 @@ public class InsuranceDialogController {
             alert.showAndWait();
             return false;
         }
-    }
-
-    private void closeDialog() {
-        Stage stage = (Stage) okButton.getScene().getWindow();
-        stage.close();
     }
 } 

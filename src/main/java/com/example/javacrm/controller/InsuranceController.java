@@ -8,219 +8,220 @@ import com.example.javacrm.service.DatabaseService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.util.StringConverter;
-import javafx.util.converter.LocalDateTimeStringConverter;
-
-import java.time.LocalDateTime;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.beans.property.SimpleStringProperty;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class InsuranceController {
     @FXML
-    private TableView<Insurance> insuranceTable;
+    private TableView<Insurance> insurancesTable;
     @FXML
     private TableColumn<Insurance, Long> idColumn;
     @FXML
-    private TableColumn<Insurance, String> customerIdColumn;
+    private TableColumn<Insurance, String> numberColumn;
     @FXML
-    private TableColumn<Insurance, String> carVinColumn;
+    private TableColumn<Insurance, String> customerColumn;
     @FXML
-    private TableColumn<Insurance, String> insuranceTypeColumn;
+    private TableColumn<Insurance, String> carColumn;
     @FXML
-    private TableColumn<Insurance, String> insuranceNumberColumn;
+    private TableColumn<Insurance, String> typeColumn;
+    @FXML
+    private TableColumn<Insurance, LocalDate> startDateColumn;
+    @FXML
+    private TableColumn<Insurance, LocalDate> expiryDateColumn;
     @FXML
     private TableColumn<Insurance, String> statusColumn;
-    @FXML
-    private TableColumn<Insurance, LocalDateTime> createdAtColumn;
-    
-    @FXML
-    private TextField customerIdField;
-    @FXML
-    private TextField carVinField;
-    @FXML
-    private TextField insuranceTypeField;
-    @FXML
-    private TextField insuranceNumberField;
-    @FXML
-    private TextField statusField;
-    
-    @FXML
-    private TextField searchCustomerIdField;
-    @FXML
-    private TextField searchCarVinField;
-    @FXML
-    private TextField searchInsuranceTypeField;
-    
-    private InsuranceService insuranceService;
-    private CustomerService customerService;
-    private CarService carService;
-    private ObservableList<Insurance> insuranceList;
-    private Insurance selectedInsurance;
-    
-    @FXML
-    public void initialize() {
-        try {
-            // Initialize services
-            DatabaseService databaseService = DatabaseService.getInstance();
-            customerService = new CustomerService(databaseService);
-            carService = new CarService(databaseService);
-            insuranceService = new InsuranceService(databaseService, customerService, carService);
 
-            // Initialize table columns
-            idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-            customerIdColumn.setCellValueFactory(new PropertyValueFactory<>("customerId"));
-            carVinColumn.setCellValueFactory(new PropertyValueFactory<>("carVin"));
-            insuranceTypeColumn.setCellValueFactory(new PropertyValueFactory<>("insuranceType"));
-            insuranceNumberColumn.setCellValueFactory(new PropertyValueFactory<>("insuranceNumber"));
-            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-            createdAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
-            
-            // Set date format for createdAt column
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            createdAtColumn.setCellFactory(column -> new TableCell<>() {
-                @Override
-                protected void updateItem(LocalDateTime date, boolean empty) {
-                    super.updateItem(date, empty);
-                    if (empty || date == null) {
-                        setText(null);
-                    } else {
-                        setText(formatter.format(date));
-                    }
-                }
-            });
-            
-            // Initialize insurance list
-            insuranceList = FXCollections.observableArrayList();
-            insuranceTable.setItems(insuranceList);
-            
-            // Add selection listener
-            insuranceTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    selectedInsurance = newSelection;
-                    populateFields(selectedInsurance);
-                }
-            });
+    @FXML
+    private TextField numberSearchField;
+    @FXML
+    private TextField vinSearchField;
+    @FXML
+    private TextField customerSearchField;
+    @FXML
+    private ComboBox<Insurance.InsuranceType> typeFilterComboBox;
+    @FXML
+    private ComboBox<String> statusFilterComboBox;
 
-            // Load initial data
-            refreshInsuranceList();
-        } catch (Exception e) {
-            showError("Failed to initialize: " + e.getMessage());
-        }
+    private final InsuranceService insuranceService;
+    private final ObservableList<Insurance> insurancesList = FXCollections.observableArrayList();
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    public InsuranceController() {
+        DatabaseService databaseService = DatabaseService.getInstance();
+        CustomerService customerService = new CustomerService(databaseService);
+        CarService carService = new CarService(databaseService);
+        this.insuranceService = new InsuranceService(databaseService, customerService, carService);
     }
-    
-    public void setServices(InsuranceService insuranceService, CustomerService customerService, CarService carService) {
-        this.insuranceService = insuranceService;
-        this.customerService = customerService;
-        this.carService = carService;
+
+    @FXML
+    private void initialize() {
+        // Инициализация колонок таблицы
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        numberColumn.setCellValueFactory(new PropertyValueFactory<>("insuranceNumber"));
+        customerColumn.setCellValueFactory(cellData -> {
+            Insurance insurance = cellData.getValue();
+            return new SimpleStringProperty(
+                insurance.getCustomerFirstName() + " " + insurance.getCustomerLastName()
+            );
+        });
+        carColumn.setCellValueFactory(cellData -> {
+            Insurance insurance = cellData.getValue();
+            return new SimpleStringProperty(
+                insurance.getCarBrand() + " " + insurance.getCarModel()
+            );
+        });
+        typeColumn.setCellValueFactory(new PropertyValueFactory<>("insuranceType"));
+        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
+        expiryDateColumn.setCellValueFactory(new PropertyValueFactory<>("expiryDate"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+
+        // Форматирование дат
+        startDateColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (empty || date == null) {
+                    setText(null);
+                } else {
+                    setText(dateFormatter.format(date));
+                }
+            }
+        });
+
+        expiryDateColumn.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (empty || date == null) {
+                    setText(null);
+                } else {
+                    setText(dateFormatter.format(date));
+                }
+            }
+        });
+
+        // Инициализация фильтров
+        typeFilterComboBox.getItems().addAll(Insurance.InsuranceType.values());
+        typeFilterComboBox.getItems().add(0, null);
+        typeFilterComboBox.setValue(null);
+
+        statusFilterComboBox.getItems().addAll("Все", "Активна", "Истекла");
+        statusFilterComboBox.setValue("Все");
+
+        // Установка данных в таблицу
+        insurancesTable.setItems(insurancesList);
         refreshInsuranceList();
     }
-    
-    private void refreshInsuranceList() {
-        insuranceList.clear();
-        insuranceList.addAll(insuranceService.getAllInsurances());
-    }
-    
-    private void populateFields(Insurance insurance) {
-        customerIdField.setText(String.valueOf(insurance.getCustomerId()));
-        carVinField.setText(insurance.getCarVin());
-        insuranceTypeField.setText(insurance.getInsuranceType());
-        insuranceNumberField.setText(insurance.getInsuranceNumber());
-        statusField.setText(insurance.getStatus());
-    }
-    
-    private void clearFields() {
-        customerIdField.clear();
-        carVinField.clear();
-        insuranceTypeField.clear();
-        insuranceNumberField.clear();
-        statusField.clear();
-        selectedInsurance = null;
-    }
-    
-    @FXML
-    private void handleAddInsurance() {
-        try {
-            Insurance insurance = new Insurance();
-            if (!customerIdField.getText().isEmpty()) {
-                insurance.setCustomerId(Long.parseLong(customerIdField.getText()));
-            }
-            insurance.setCarVin(carVinField.getText());
-            insurance.setInsuranceType(insuranceTypeField.getText());
-            insurance.setInsuranceNumber(insuranceNumberField.getText());
-            insurance.setStatus(statusField.getText());
-            
-            insuranceService.addInsurance(insurance);
-            refreshInsuranceList();
-            clearFields();
-        } catch (Exception e) {
-            showError("Failed to add insurance: " + e.getMessage());
-        }
-    }
-    
-    @FXML
-    private void handleUpdateInsurance() {
-        if (selectedInsurance == null) {
-            showError("No insurance selected");
-            return;
-        }
-        
-        try {
-            if (!customerIdField.getText().isEmpty()) {
-                selectedInsurance.setCustomerId(Long.parseLong(customerIdField.getText()));
-            }
-            selectedInsurance.setCarVin(carVinField.getText());
-            selectedInsurance.setInsuranceType(insuranceTypeField.getText());
-            selectedInsurance.setInsuranceNumber(insuranceNumberField.getText());
-            selectedInsurance.setStatus(statusField.getText());
-            
-            insuranceService.updateInsurance(selectedInsurance);
-            refreshInsuranceList();
-            clearFields();
-        } catch (Exception e) {
-            showError("Failed to update insurance: " + e.getMessage());
-        }
-    }
-    
-    @FXML
-    private void handleDeleteInsurance() {
-        if (selectedInsurance == null) {
-            showError("No insurance selected");
-            return;
-        }
-        
-        try {
-            insuranceService.deleteInsurance(selectedInsurance.getId());
-            refreshInsuranceList();
-            clearFields();
-        } catch (Exception e) {
-            showError("Failed to delete insurance: " + e.getMessage());
-        }
-    }
-    
+
     @FXML
     private void handleSearch() {
-        String customerId = searchCustomerIdField.getText();
-        String carVin = searchCarVinField.getText();
-        String insuranceType = searchInsuranceTypeField.getText();
-        
-        insuranceList.clear();
-        insuranceList.addAll(insuranceService.searchInsurances(carVin, customerId, insuranceType));
+        String number = numberSearchField.getText();
+        String vin = vinSearchField.getText();
+        String customer = customerSearchField.getText();
+        Insurance.InsuranceType type = typeFilterComboBox.getValue();
+        String status = statusFilterComboBox.getValue();
+
+        insurancesList.clear();
+        insurancesList.addAll(insuranceService.searchInsurances(number, vin, customer, type, status));
     }
-    
+
     @FXML
-    private void handleClearSearch() {
-        searchCustomerIdField.clear();
-        searchCarVinField.clear();
-        searchInsuranceTypeField.clear();
+    private void handleReset() {
+        numberSearchField.clear();
+        vinSearchField.clear();
+        customerSearchField.clear();
+        typeFilterComboBox.setValue(null);
+        statusFilterComboBox.setValue("Все");
         refreshInsuranceList();
     }
-    
-    private void showError(String message) {
+
+    private void refreshInsuranceList() {
+        insurancesList.clear();
+        insurancesList.addAll(insuranceService.getAllInsurances());
+    }
+
+    @FXML
+    private void handleAddInsurance() {
+        Insurance insurance = new Insurance();
+        boolean okClicked = showInsuranceDialog(insurance);
+        if (okClicked) {
+            insuranceService.addInsurance(insurance);
+            refreshInsuranceList();
+        }
+    }
+
+    @FXML
+    private void handleEditInsurance() {
+        Insurance selectedInsurance = insurancesTable.getSelectionModel().getSelectedItem();
+        if (selectedInsurance != null) {
+            boolean okClicked = showInsuranceDialog(selectedInsurance);
+            if (okClicked) {
+                insuranceService.updateInsurance(selectedInsurance);
+                refreshInsuranceList();
+            }
+        } else {
+            showAlert("Ошибка", "Пожалуйста, выберите страховку для редактирования.");
+        }
+    }
+
+    @FXML
+    private void handleDeleteInsurance() {
+        Insurance selectedInsurance = insurancesTable.getSelectionModel().getSelectedItem();
+        if (selectedInsurance != null) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Подтверждение удаления");
+            alert.setHeaderText("Удаление страховки");
+            alert.setContentText("Вы уверены, что хотите удалить эту страховку?");
+
+            if (alert.showAndWait().get() == ButtonType.OK) {
+                insuranceService.deleteInsurance(selectedInsurance.getId());
+                refreshInsuranceList();
+            }
+        } else {
+            showAlert("Ошибка", "Пожалуйста, выберите страховку для удаления.");
+        }
+    }
+
+    private boolean showInsuranceDialog(Insurance insurance) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/insurance-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Страховка");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(insurancesTable.getScene().getWindow());
+
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+
+            InsuranceDialogController controller = loader.getController();
+            controller.setDialogStage(dialogStage);
+            controller.setInsurance(insurance);
+
+            dialogStage.showAndWait();
+
+            return controller.isOkClicked();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText(content);
         alert.showAndWait();
     }
 } 

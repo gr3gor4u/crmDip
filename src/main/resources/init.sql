@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS additional_equipment;
 DROP TABLE IF EXISTS cars;
 DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS users;
+DROP TYPE IF EXISTS insurance_type;
 
 -- Создаем таблицы заново
 CREATE TABLE users (
@@ -58,17 +59,44 @@ CREATE TABLE additional_equipment (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Создание enum для типа страховки
+CREATE TYPE insurance_type AS ENUM ('КАСКО', 'ОСАГО');
+
+-- Функция для генерации случайного номера страховки
+CREATE OR REPLACE FUNCTION generate_insurance_number()
+RETURNS TRIGGER AS $$
+DECLARE
+    chars TEXT := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    result TEXT := '';
+    i INTEGER;
+BEGIN
+    FOR i IN 1..10 LOOP
+        result := result || substr(chars, floor(random() * length(chars) + 1)::integer, 1);
+    END LOOP;
+    NEW.insurance_number := result;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Создание таблицы страховок
 CREATE TABLE insurance (
-    id BIGSERIAL PRIMARY KEY,
-    car_vin VARCHAR(17) NOT NULL,
-    customer_id BIGINT NOT NULL,
-    insurance_type VARCHAR(50) NOT NULL,
-    insurance_number VARCHAR(50) NOT NULL UNIQUE,
-    price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (car_vin) REFERENCES cars(vin),
-    FOREIGN KEY (customer_id) REFERENCES customers(id)
+    id SERIAL PRIMARY KEY,
+    customer_id BIGINT REFERENCES customers(id),
+    car_vin VARCHAR(17) REFERENCES cars(vin),
+    insurance_type insurance_type NOT NULL,
+    insurance_number VARCHAR(10) NOT NULL UNIQUE,
+    start_date DATE NOT NULL,
+    expiry_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Активна', 'Истекла')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Триггер для автоматической генерации номера страховки
+CREATE TRIGGER set_insurance_number
+    BEFORE INSERT ON insurance
+    FOR EACH ROW
+    WHEN (NEW.insurance_number IS NULL)
+    EXECUTE FUNCTION generate_insurance_number();
 
 CREATE TABLE deals (
     id BIGSERIAL PRIMARY KEY,
@@ -102,7 +130,19 @@ CREATE INDEX idx_cars_vin ON cars(vin);
 CREATE INDEX idx_insurance_number ON insurance(insurance_number);
 CREATE INDEX idx_deals_status ON deals(status);
 
+-- Создание индексов
+CREATE INDEX idx_insurance_customer_id ON insurance(customer_id);
+CREATE INDEX idx_insurance_car_vin ON insurance(car_vin);
+CREATE INDEX idx_insurance_status ON insurance(status);
+CREATE INDEX idx_insurance_dates ON insurance(start_date, expiry_date);
+
 -- Добавляем тестового пользователя
 INSERT INTO users (username, password, email, role, first_name, last_name)
 VALUES ('admin', 'admin', 'admin@example.com', 'ADMIN', 'Admin', 'User')
-ON CONFLICT (username) DO NOTHING; 
+ON CONFLICT (username) DO NOTHING;
+
+DO $$ BEGIN
+    CREATE TYPE insurance_status AS ENUM ('Активна', 'Истекла');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$; 
