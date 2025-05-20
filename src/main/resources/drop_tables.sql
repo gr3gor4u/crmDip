@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS deal_equipment;
+DROP TABLE IF EXISTS deals;
+DROP TABLE IF EXISTS insurance;
+DROP TABLE IF EXISTS additional_equipment;
+DROP TABLE IF EXISTS cars;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS users; 

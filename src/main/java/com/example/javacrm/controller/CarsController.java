@@ -17,6 +17,7 @@ import javafx.util.Callback;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.StringConverter;
 import javafx.util.converter.LocalDateTimeStringConverter;
+import javafx.geometry.Insets;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,24 +27,23 @@ import java.util.Optional;
 public class CarsController {
     @FXML private TableView<Car> carsTable;
     @FXML private TableColumn<Car, Long> idColumn;
+    @FXML private TableColumn<Car, String> vinColumn;
     @FXML private TableColumn<Car, String> brandColumn;
     @FXML private TableColumn<Car, String> modelColumn;
     @FXML private TableColumn<Car, Integer> yearColumn;
     @FXML private TableColumn<Car, Double> priceColumn;
+    @FXML private TableColumn<Car, String> colorColumn;
+    @FXML private TableColumn<Car, String> kuzovColumn;
+    @FXML private TableColumn<Car, Double> engineVolumeColumn;
+    @FXML private TableColumn<Car, Integer> horsePowerColumn;
     @FXML private TableColumn<Car, String> statusColumn;
     @FXML private TableColumn<Car, Void> actionsColumn;
 
-    @FXML private TextField vinField;
-    @FXML private TextField brandField;
-    @FXML private TextField modelField;
-    @FXML private TextField yearField;
-    @FXML private TextField colorField;
-    @FXML private TextField statusField;
-
-    @FXML private TextField searchVinField;
-    @FXML private TextField searchBrandField;
-    @FXML private TextField searchModelField;
-    @FXML private TextField searchStatusField;
+    @FXML private TextField vinFilterField;
+    @FXML private TextField brandFilterField;
+    @FXML private TextField modelFilterField;
+    @FXML private TextField colorFilterField;
+    @FXML private ComboBox<String> statusFilterComboBox;
 
     private CarService carService;
     private ObservableList<Car> carsList;
@@ -55,12 +55,22 @@ public class CarsController {
         
         // Инициализация колонок таблицы
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        vinColumn.setCellValueFactory(new PropertyValueFactory<>("vin"));
         brandColumn.setCellValueFactory(new PropertyValueFactory<>("brand"));
         modelColumn.setCellValueFactory(new PropertyValueFactory<>("model"));
         yearColumn.setCellValueFactory(new PropertyValueFactory<>("year"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+        colorColumn.setCellValueFactory(new PropertyValueFactory<>("color"));
+        kuzovColumn.setCellValueFactory(new PropertyValueFactory<>("kuzov"));
+        engineVolumeColumn.setCellValueFactory(new PropertyValueFactory<>("engineVolume"));
+        horsePowerColumn.setCellValueFactory(new PropertyValueFactory<>("horsePower"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
+
+        // Инициализация ComboBox для статуса
+        statusFilterComboBox.getItems().clear();
+        statusFilterComboBox.getItems().addAll("", "В наличии", "Забронирован", "Продан", "На ремонте");
+        statusFilterComboBox.setValue("");
+
         // Добавление кнопок действий
         actionsColumn.setCellFactory(col -> new TableCell<>() {
             private final Button editButton = new Button("Редактировать");
@@ -85,6 +95,7 @@ public class CarsController {
                     setGraphic(null);
                 } else {
                     HBox buttons = new HBox(5, editButton, deleteButton);
+                    buttons.setPadding(new Insets(5));
                     setGraphic(buttons);
                 }
             }
@@ -107,7 +118,8 @@ public class CarsController {
 
             Optional<ButtonType> result = dialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // TODO: Добавить логику сохранения автомобиля
+                Car newCar = controller.getCar();
+                carService.addCar(newCar);
                 refreshTable();
             }
         } catch (IOException e) {
@@ -118,22 +130,23 @@ public class CarsController {
     private void handleEditCar(Car car) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/car-dialog.fxml"));
-            GridPane dialogContent = loader.load();
-            
+            DialogPane dialogPane = loader.load();
+            CarDialogController controller = loader.getController();
+            controller.setCar(car);
+
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Редактировать автомобиль");
             dialog.initModality(Modality.APPLICATION_MODAL);
-            
-            DialogPane dialogPane = new DialogPane();
-            dialogPane.setContent(dialogContent);
-            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-            
             dialog.setDialogPane(dialogPane);
-            
+
             Optional<ButtonType> result = dialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // TODO: Добавить логику обновления автомобиля
-                refreshTable();
+                Car updatedCar = controller.getCar();
+                if (updatedCar != null) {
+                    updatedCar.setId(car.getId());
+                    carService.updateCar(updatedCar);
+                    refreshTable();
+                }
             }
         } catch (IOException e) {
             showError("Ошибка при открытии диалога", e.getMessage());
@@ -144,28 +157,39 @@ public class CarsController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Подтверждение удаления");
         alert.setHeaderText("Удаление автомобиля");
-        alert.setContentText("Вы уверены, что хотите удалить этот автомобиль?");
+        alert.setContentText("Вы уверены, что хотите удалить автомобиль " + car.getBrand() + " " + car.getModel() + "?");
         
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // TODO: Добавить логику удаления автомобиля
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            carService.deleteCar(car.getId());
             refreshTable();
         }
     }
 
     @FXML
     private void handleSearch() {
-        // TODO: Реализовать поиск
+        String vin = vinFilterField.getText().trim();
+        String brand = brandFilterField.getText().trim();
+        String model = modelFilterField.getText().trim();
+        String color = colorFilterField.getText().trim();
+        String status = statusFilterComboBox.getValue();
+
+        carsTable.getItems().clear();
+        carsTable.getItems().addAll(carService.searchCars(vin, brand, model, color, status));
     }
 
     @FXML
     private void handleClearSearch() {
-        // TODO: Реализовать очистку поиска
+        vinFilterField.clear();
+        brandFilterField.clear();
+        modelFilterField.clear();
+        colorFilterField.clear();
+        statusFilterComboBox.setValue("");
+        refreshTable();
     }
 
     private void refreshTable() {
-        carsTable.getItems().clear();
-        carsTable.getItems().addAll(carService.getAllCars());
+        carsList = FXCollections.observableArrayList(carService.getAllCars());
+        carsTable.setItems(carsList);
     }
 
     private void showError(String title, String content) {

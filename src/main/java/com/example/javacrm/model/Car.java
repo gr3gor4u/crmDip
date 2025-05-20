@@ -8,16 +8,17 @@ public class Car {
     private String brand;
     private String model;
     private Integer year;
+    private Double price;
     private String color;
     private String kuzov;
-    private Double obemDvig;
+    private Double engineVolume;
     private Integer horsePower;
-    private Double price;
     private String status;
     private LocalDateTime createdAt;
 
     public Car() {
         this.createdAt = LocalDateTime.now();
+        this.status = "Доступно";
     }
 
     public Long getId() {
@@ -60,6 +61,14 @@ public class Car {
         this.year = year;
     }
 
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public String getColor() {
         return color;
     }
@@ -76,12 +85,12 @@ public class Car {
         this.kuzov = kuzov;
     }
 
-    public Double getObemDvig() {
-        return obemDvig;
+    public Double getEngineVolume() {
+        return engineVolume;
     }
 
-    public void setObemDvig(Double obemDvig) {
-        this.obemDvig = obemDvig;
+    public void setEngineVolume(Double engineVolume) {
+        this.engineVolume = engineVolume;
     }
 
     public Integer getHorsePower() {
@@ -90,14 +99,6 @@ public class Car {
 
     public void setHorsePower(Integer horsePower) {
         this.horsePower = horsePower;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
     }
 
     public String getStatus() {
@@ -114,6 +115,11 @@ public class Car {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Override
+    public String toString() {
+        return brand + " " + model + " (" + year + ")";
     }
 
     public boolean isAvailable() {

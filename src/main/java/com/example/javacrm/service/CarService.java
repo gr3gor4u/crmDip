@@ -17,7 +17,7 @@ public class CarService {
     
     public List<Car> getAllCars() {
         List<Car> cars = new ArrayList<>();
-        String sql = "SELECT * FROM cars";
+        String sql = "SELECT * FROM cars ORDER BY brand, model";
         
         try (Connection conn = databaseService.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -29,8 +29,12 @@ public class CarService {
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
+                car.setPrice(rs.getDouble("price"));
                 car.setColor(rs.getString("color"));
+                car.setKuzov(rs.getString("kuzov"));
+                car.setEngineVolume(rs.getDouble("obem_dvig"));
+                car.setHorsePower(rs.getInt("horse_power"));
                 car.setStatus(rs.getString("status"));
                 car.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 cars.add(car);
@@ -99,22 +103,27 @@ public class CarService {
     }
     
     public void addCar(Car car) {
-        String sql = "INSERT INTO cars (vin, brand, model, year, color, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cars (vin, brand, model, car_year, price, color, kuzov, obem_dvig, horse_power, status, created_at) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = databaseService.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
-            stmt.setString(1, car.getVin());
-            stmt.setString(2, car.getBrand());
-            stmt.setString(3, car.getModel());
-            stmt.setInt(4, car.getYear());
-            stmt.setString(5, car.getColor());
-            stmt.setString(6, car.getStatus());
-            stmt.setTimestamp(7, Timestamp.valueOf(car.getCreatedAt()));
+            pstmt.setString(1, car.getVin());
+            pstmt.setString(2, car.getBrand());
+            pstmt.setString(3, car.getModel());
+            pstmt.setInt(4, car.getYear());
+            pstmt.setDouble(5, car.getPrice());
+            pstmt.setString(6, car.getColor());
+            pstmt.setString(7, car.getKuzov());
+            pstmt.setDouble(8, car.getEngineVolume());
+            pstmt.setInt(9, car.getHorsePower());
+            pstmt.setString(10, car.getStatus());
+            pstmt.setTimestamp(11, Timestamp.valueOf(car.getCreatedAt()));
             
-            stmt.executeUpdate();
+            pstmt.executeUpdate();
             
-            ResultSet rs = stmt.getGeneratedKeys();
+            ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
                 car.setId(rs.getLong(1));
             }
@@ -124,20 +133,25 @@ public class CarService {
     }
     
     public void updateCar(Car car) {
-        String sql = "UPDATE cars SET vin = ?, brand = ?, model = ?, year = ?, color = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE cars SET vin = ?, brand = ?, model = ?, car_year = ?, price = ?, " +
+                    "color = ?, kuzov = ?, obem_dvig = ?, horse_power = ?, status = ? WHERE id = ?";
         
         try (Connection conn = databaseService.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            stmt.setString(1, car.getVin());
-            stmt.setString(2, car.getBrand());
-            stmt.setString(3, car.getModel());
-            stmt.setInt(4, car.getYear());
-            stmt.setString(5, car.getColor());
-            stmt.setString(6, car.getStatus());
-            stmt.setLong(7, car.getId());
+            pstmt.setString(1, car.getVin());
+            pstmt.setString(2, car.getBrand());
+            pstmt.setString(3, car.getModel());
+            pstmt.setInt(4, car.getYear());
+            pstmt.setDouble(5, car.getPrice());
+            pstmt.setString(6, car.getColor());
+            pstmt.setString(7, car.getKuzov());
+            pstmt.setDouble(8, car.getEngineVolume());
+            pstmt.setInt(9, car.getHorsePower());
+            pstmt.setString(10, car.getStatus());
+            pstmt.setLong(11, car.getId());
             
-            stmt.executeUpdate();
+            pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -162,42 +176,48 @@ public class CarService {
         List<Object> params = new ArrayList<>();
         
         if (vin != null && !vin.isEmpty()) {
-            sql.append(" AND vin LIKE ?");
+            sql.append(" AND vin ILIKE ?");
             params.add("%" + vin + "%");
         }
         if (brand != null && !brand.isEmpty()) {
-            sql.append(" AND brand LIKE ?");
+            sql.append(" AND brand ILIKE ?");
             params.add("%" + brand + "%");
         }
         if (model != null && !model.isEmpty()) {
-            sql.append(" AND model LIKE ?");
+            sql.append(" AND model ILIKE ?");
             params.add("%" + model + "%");
         }
         if (color != null && !color.isEmpty()) {
-            sql.append(" AND color LIKE ?");
+            sql.append(" AND color ILIKE ?");
             params.add("%" + color + "%");
         }
         if (status != null && !status.isEmpty()) {
-            sql.append(" AND status LIKE ?");
-            params.add("%" + status + "%");
+            sql.append(" AND status = ?");
+            params.add(status);
         }
         
+        sql.append(" ORDER BY brand, model");
+
         try (Connection conn = databaseService.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             
             for (int i = 0; i < params.size(); i++) {
-                stmt.setObject(i + 1, params.get(i));
+                pstmt.setObject(i + 1, params.get(i));
             }
             
-            ResultSet rs = stmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 Car car = new Car();
                 car.setId(rs.getLong("id"));
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
+                car.setPrice(rs.getDouble("price"));
                 car.setColor(rs.getString("color"));
+                car.setKuzov(rs.getString("kuzov"));
+                car.setEngineVolume(rs.getDouble("obem_dvig"));
+                car.setHorsePower(rs.getInt("horse_power"));
                 car.setStatus(rs.getString("status"));
                 car.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 cars.add(car);

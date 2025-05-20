@@ -17,18 +17,43 @@
         <Label text="Управление автомобилями" style="-fx-font-size: 20px;"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Добавить автомобиль" onAction="#handleAddCar"/>
-        <Button text="Поиск" onAction="#handleSearch"/>
     </HBox>
+
+    <!-- Форма поиска -->
+    <GridPane hgap="10" vgap="5">
+        <Label text="VIN:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="vinFilterField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="Марка:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <TextField fx:id="brandFilterField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        
+        <Label text="Модель:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+        <TextField fx:id="modelFilterField" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+        
+        <Label text="Цвет:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="colorFilterField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Статус:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+        <ComboBox fx:id="statusFilterComboBox" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+        
+        <Button text="Поиск" onAction="#handleSearch" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
+        <Button text="Очистить" onAction="#handleClearSearch" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
+    </GridPane>
 
     <TableView fx:id="carsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="idColumn" text="ID"/>
-            <TableColumn fx:id="brandColumn" text="Марка"/>
-            <TableColumn fx:id="modelColumn" text="Модель"/>
-            <TableColumn fx:id="yearColumn" text="Год"/>
-            <TableColumn fx:id="priceColumn" text="Цена"/>
-            <TableColumn fx:id="statusColumn" text="Статус"/>
-            <TableColumn fx:id="actionsColumn" text="Действия"/>
+            <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="vinColumn" text="VIN" prefWidth="150"/>
+            <TableColumn fx:id="brandColumn" text="Марка" prefWidth="100"/>
+            <TableColumn fx:id="modelColumn" text="Модель" prefWidth="150"/>
+            <TableColumn fx:id="yearColumn" text="Год" prefWidth="70"/>
+            <TableColumn fx:id="priceColumn" text="Цена" prefWidth="100"/>
+            <TableColumn fx:id="colorColumn" text="Цвет" prefWidth="100"/>
+            <TableColumn fx:id="kuzovColumn" text="Кузов" prefWidth="100"/>
+            <TableColumn fx:id="engineVolumeColumn" text="Объем" prefWidth="80"/>
+            <TableColumn fx:id="horsePowerColumn" text="Мощность" prefWidth="100"/>
+            <TableColumn fx:id="statusColumn" text="Статус" prefWidth="100"/>
+            <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="150"/>
         </columns>
     </TableView>
 </VBox> 

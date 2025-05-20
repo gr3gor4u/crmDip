@@ -1,5 +1,14 @@
--- Таблица пользователей
-CREATE TABLE IF NOT EXISTS users (
+-- Удаляем существующие таблицы
+DROP TABLE IF EXISTS deal_equipment;
+DROP TABLE IF EXISTS deals;
+DROP TABLE IF EXISTS insurance;
+DROP TABLE IF EXISTS additional_equipment;
+DROP TABLE IF EXISTS cars;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS users;
+
+-- Создаем таблицы заново
+CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
@@ -10,8 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица клиентов
-CREATE TABLE IF NOT EXISTS customers (
+CREATE TABLE customers (
     id BIGSERIAL PRIMARY KEY,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
@@ -24,8 +32,7 @@ CREATE TABLE IF NOT EXISTS customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица автомобилей
-CREATE TABLE IF NOT EXISTS cars (
+CREATE TABLE cars (
     id BIGSERIAL PRIMARY KEY,
     model VARCHAR(100) NOT NULL,
     brand VARCHAR(50) NOT NULL,
@@ -40,8 +47,7 @@ CREATE TABLE IF NOT EXISTS cars (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица дополнительного оборудования
-CREATE TABLE IF NOT EXISTS additional_equipment (
+CREATE TABLE additional_equipment (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -52,8 +58,7 @@ CREATE TABLE IF NOT EXISTS additional_equipment (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Таблица страховок
-CREATE TABLE IF NOT EXISTS insurance (
+CREATE TABLE insurance (
     id BIGSERIAL PRIMARY KEY,
     car_vin VARCHAR(17) NOT NULL,
     customer_id BIGINT NOT NULL,
@@ -65,8 +70,7 @@ CREATE TABLE IF NOT EXISTS insurance (
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
--- Таблица сделок
-CREATE TABLE IF NOT EXISTS deals (
+CREATE TABLE deals (
     id BIGSERIAL PRIMARY KEY,
     car_id BIGINT NOT NULL,
     customer_id BIGINT NOT NULL,
@@ -79,8 +83,7 @@ CREATE TABLE IF NOT EXISTS deals (
     FOREIGN KEY (insurance_id) REFERENCES insurance(id)
 );
 
--- Таблица связи сделок с оборудованием
-CREATE TABLE IF NOT EXISTS deal_equipment (
+CREATE TABLE deal_equipment (
     deal_id BIGINT NOT NULL,
     equipment_id BIGINT NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
@@ -91,18 +94,15 @@ CREATE TABLE IF NOT EXISTS deal_equipment (
     FOREIGN KEY (equipment_id) REFERENCES additional_equipment(id)
 );
 
--- Добавляем VIN-номер в таблицу автомобилей
-ALTER TABLE cars ADD COLUMN IF NOT EXISTS vin VARCHAR(17) UNIQUE;
+-- Добавляем индексы
+CREATE INDEX idx_customers_name ON customers(first_name, last_name, middle_name);
+CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_customers_passport ON customers(passport_number);
+CREATE INDEX idx_cars_vin ON cars(vin);
+CREATE INDEX idx_insurance_number ON insurance(insurance_number);
+CREATE INDEX idx_deals_status ON deals(status);
 
--- Добавляем индексы для оптимизации поиска
-CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(first_name, last_name, middle_name);
-CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
-CREATE INDEX IF NOT EXISTS idx_customers_passport ON customers(passport_number);
-CREATE INDEX IF NOT EXISTS idx_cars_vin ON cars(vin);
-CREATE INDEX IF NOT EXISTS idx_insurance_number ON insurance(insurance_number);
-CREATE INDEX IF NOT EXISTS idx_deals_status ON deals(status);
-
--- Тестовые данные
+-- Добавляем тестового пользователя
 INSERT INTO users (username, password, email, role, first_name, last_name)
-SELECT 'admin', 'admin', 'admin@example.com', 'ADMIN', 'Admin', 'User'
-WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin'); 
+VALUES ('admin', 'admin', 'admin@example.com', 'ADMIN', 'Admin', 'User')
+ON CONFLICT (username) DO NOTHING; 
