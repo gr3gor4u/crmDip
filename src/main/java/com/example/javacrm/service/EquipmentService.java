@@ -1,6 +1,8 @@
 package com.example.javacrm.service;
 
 import com.example.javacrm.model.AdditionalEquipment;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,7 @@ public class EquipmentService {
         this.databaseService = databaseService;
     }
     
-    public List<AdditionalEquipment> getAllEquipment() {
+    public ObservableList<AdditionalEquipment> getAllEquipment() {
         List<AdditionalEquipment> equipment = new ArrayList<>();
         String query = "SELECT * FROM additional_equipment";
         
@@ -24,17 +26,16 @@ public class EquipmentService {
                 AdditionalEquipment item = new AdditionalEquipment(
                     rs.getLong("id"),
                     rs.getString("name"),
-                    rs.getString("description"),
                     rs.getDouble("price"),
-                    rs.getString("type"),
-                    rs.getString("status")
+                    rs.getInt("quantity"),
+                    rs.getBoolean("available")
                 );
                 equipment.add(item);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return equipment;
+        return FXCollections.observableArrayList(equipment);
     }
     
     public AdditionalEquipment getEquipmentById(Long id) {
@@ -50,10 +51,9 @@ public class EquipmentService {
                 return new AdditionalEquipment(
                     rs.getLong("id"),
                     rs.getString("name"),
-                    rs.getString("description"),
                     rs.getDouble("price"),
-                    rs.getString("type"),
-                    rs.getString("status")
+                    rs.getInt("quantity"),
+                    rs.getBoolean("available")
                 );
             }
         } catch (SQLException e) {
@@ -63,16 +63,15 @@ public class EquipmentService {
     }
     
     public void addEquipment(AdditionalEquipment equipment) {
-        String query = "INSERT INTO additional_equipment (name, description, price, type, status) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO additional_equipment (name, price, quantity, available) VALUES (?, ?, ?, ?)";
         
         try (Connection conn = databaseService.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, equipment.getName());
-            pstmt.setString(2, equipment.getDescription());
-            pstmt.setDouble(3, equipment.getPrice());
-            pstmt.setString(4, equipment.getType());
-            pstmt.setString(5, equipment.getStatus());
+            pstmt.setDouble(2, equipment.getPrice());
+            pstmt.setInt(3, equipment.getQuantity());
+            pstmt.setBoolean(4, equipment.getQuantity() > 0);
             
             pstmt.executeUpdate();
             
@@ -87,17 +86,16 @@ public class EquipmentService {
     }
     
     public void updateEquipment(AdditionalEquipment equipment) {
-        String query = "UPDATE additional_equipment SET name = ?, description = ?, price = ?, type = ?, status = ? WHERE id = ?";
+        String query = "UPDATE additional_equipment SET name = ?, price = ?, quantity = ?, available = ? WHERE id = ?";
         
         try (Connection conn = databaseService.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(query)) {
             
             pstmt.setString(1, equipment.getName());
-            pstmt.setString(2, equipment.getDescription());
-            pstmt.setDouble(3, equipment.getPrice());
-            pstmt.setString(4, equipment.getType());
-            pstmt.setString(5, equipment.getStatus());
-            pstmt.setLong(6, equipment.getId());
+            pstmt.setDouble(2, equipment.getPrice());
+            pstmt.setInt(3, equipment.getQuantity());
+            pstmt.setBoolean(4, equipment.getQuantity() > 0);
+            pstmt.setLong(5, equipment.getId());
             
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -118,49 +116,54 @@ public class EquipmentService {
         }
     }
     
-    public List<AdditionalEquipment> searchEquipment(String name, String type, String status) {
+    public List<AdditionalEquipment> searchEquipment(String id, String name, String minPrice, String maxPrice) {
         List<AdditionalEquipment> equipment = new ArrayList<>();
-        StringBuilder query = new StringBuilder("SELECT * FROM additional_equipment WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM additional_equipment WHERE 1=1");
         List<Object> params = new ArrayList<>();
-        
+
+        if (id != null && !id.isEmpty()) {
+            sql.append(" AND id = ?");
+            params.add(Long.parseLong(id));
+        }
         if (name != null && !name.isEmpty()) {
-            query.append(" AND name LIKE ?");
+            sql.append(" AND name ILIKE ?");
             params.add("%" + name + "%");
         }
-        
-        if (type != null && !type.isEmpty()) {
-            query.append(" AND type LIKE ?");
-            params.add("%" + type + "%");
+        if (minPrice != null && !minPrice.isEmpty()) {
+            sql.append(" AND price >= ?");
+            params.add(Double.parseDouble(minPrice));
         }
-        
-        if (status != null && !status.isEmpty()) {
-            query.append(" AND status = ?");
-            params.add(status);
+        if (maxPrice != null && !maxPrice.isEmpty()) {
+            sql.append(" AND price <= ?");
+            params.add(Double.parseDouble(maxPrice));
         }
-        
+
+        sql.append(" ORDER BY name");
+
         try (Connection conn = databaseService.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query.toString())) {
+             PreparedStatement pstmt = conn.prepareStatement(sql.toString())) {
             
             for (int i = 0; i < params.size(); i++) {
                 pstmt.setObject(i + 1, params.get(i));
             }
-            
+
             ResultSet rs = pstmt.executeQuery();
-            
             while (rs.next()) {
-                AdditionalEquipment item = new AdditionalEquipment(
-                    rs.getLong("id"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getDouble("price"),
-                    rs.getString("type"),
-                    rs.getString("status")
-                );
-                equipment.add(item);
+                equipment.add(mapEquipmentFromResultSet(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Ошибка при поиске оборудования", e);
         }
         return equipment;
+    }
+
+    private AdditionalEquipment mapEquipmentFromResultSet(ResultSet rs) throws SQLException {
+        return new AdditionalEquipment(
+            rs.getLong("id"),
+            rs.getString("name"),
+            rs.getDouble("price"),
+            rs.getInt("quantity"),
+            rs.getBoolean("available")
+        );
     }
 } 

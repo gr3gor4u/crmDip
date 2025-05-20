@@ -9,6 +9,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
+import javafx.scene.paint.Color;
+import javafx.scene.control.cell.CheckBoxTableCell;
 
 public class EquipmentController {
     @FXML
@@ -18,29 +23,34 @@ public class EquipmentController {
     @FXML
     private TableColumn<AdditionalEquipment, String> nameColumn;
     @FXML
-    private TableColumn<AdditionalEquipment, String> descriptionColumn;
-    @FXML
     private TableColumn<AdditionalEquipment, Double> priceColumn;
     @FXML
+    private TableColumn<AdditionalEquipment, Integer> quantityColumn;
+    @FXML
+    private TableColumn<AdditionalEquipment, Boolean> availableColumn;
+    @FXML
     private TableColumn<AdditionalEquipment, Void> actionsColumn;
+    @FXML
+    private TableColumn<AdditionalEquipment, Boolean> selectColumn;
     
     @FXML
     private TextField nameField;
     @FXML
-    private TextArea descriptionField;
-    @FXML
     private TextField priceField;
     @FXML
-    private TextField typeField;
-    @FXML
-    private TextField statusField;
+    private TextField quantityField;
     
     @FXML
     private TextField searchNameField;
+    
     @FXML
-    private TextField searchTypeField;
+    private TextField idFilterField;
     @FXML
-    private TextField searchStatusField;
+    private TextField nameFilterField;
+    @FXML
+    private TextField minPriceFilterField;
+    @FXML
+    private TextField maxPriceFilterField;
     
     private EquipmentService equipmentService;
     private ObservableList<AdditionalEquipment> equipmentList;
@@ -53,106 +63,155 @@ public class EquipmentController {
         // Инициализация колонок таблицы
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+        quantityColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        availableColumn.setCellValueFactory(new PropertyValueFactory<>("available"));
         
-        // Загрузка данных
+        // Колонка с чекбоксами для массового удаления
+        selectColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectColumn));
+        
+        // Колонка с кнопками действий
+        actionsColumn.setCellFactory(col -> new TableCell<>() {
+            private final Button editButton = new Button("Редактировать");
+            private final Button deleteButton = new Button("Удалить");
+            
+            {
+                editButton.setOnAction(e -> {
+                    AdditionalEquipment equipment = getTableView().getItems().get(getIndex());
+                    handleEditEquipment(equipment);
+                });
+                
+                deleteButton.setOnAction(e -> {
+                    AdditionalEquipment equipment = getTableView().getItems().get(getIndex());
+                    handleDeleteEquipment(equipment);
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    HBox buttons = new HBox(5, editButton, deleteButton);
+                    setGraphic(buttons);
+                }
+            }
+        });
+        
         refreshTable();
     }
     
     private void refreshTable() {
-        equipmentTable.getItems().clear();
-        equipmentTable.getItems().addAll(equipmentService.getAllEquipment());
+        equipmentList = equipmentService.getAllEquipment();
+        equipmentTable.setItems(equipmentList);
     }
     
     private void populateFields(AdditionalEquipment equipment) {
         nameField.setText(equipment.getName());
-        descriptionField.setText(equipment.getDescription());
         priceField.setText(String.valueOf(equipment.getPrice()));
-        typeField.setText(equipment.getType());
-        statusField.setText(equipment.getStatus());
+        quantityField.setText(String.valueOf(equipment.getQuantity()));
     }
     
     private void clearFields() {
         nameField.clear();
-        descriptionField.clear();
         priceField.clear();
-        typeField.clear();
-        statusField.clear();
+        quantityField.clear();
         selectedEquipment = null;
     }
     
     @FXML
     private void handleAddEquipment() {
-        // TODO: Реализовать добавление оборудования
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Информация");
-        alert.setHeaderText(null);
-        alert.setContentText("Функция добавления оборудования будет реализована позже");
-        alert.showAndWait();
+        try {
+            AdditionalEquipment equipment = new AdditionalEquipment();
+            equipment.setName(nameField.getText());
+            equipment.setPrice(Double.parseDouble(priceField.getText()));
+            equipment.setQuantity(Integer.parseInt(quantityField.getText()));
+            equipment.setAvailable(equipment.getQuantity() > 0);
+            
+            equipmentService.addEquipment(equipment);
+            refreshTable();
+            clearFields();
+        } catch (NumberFormatException e) {
+            showError("Неверный формат цены или количества");
+        } catch (Exception e) {
+            showError("Ошибка при добавлении оборудования: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleEditEquipment(AdditionalEquipment equipment) {
+        selectedEquipment = equipment;
+        populateFields(equipment);
     }
     
     @FXML
     private void handleUpdateEquipment() {
         if (selectedEquipment == null) {
-            showError("No equipment selected");
+            showError("Оборудование не выбрано");
             return;
         }
         
         try {
             selectedEquipment.setName(nameField.getText());
-            selectedEquipment.setDescription(descriptionField.getText());
             selectedEquipment.setPrice(Double.parseDouble(priceField.getText()));
-            selectedEquipment.setType(typeField.getText());
-            selectedEquipment.setStatus(statusField.getText());
+            selectedEquipment.setQuantity(Integer.parseInt(quantityField.getText()));
+            selectedEquipment.setAvailable(selectedEquipment.getQuantity() > 0);
             
             equipmentService.updateEquipment(selectedEquipment);
             refreshTable();
             clearFields();
         } catch (NumberFormatException e) {
-            showError("Invalid price format");
+            showError("Неверный формат цены или количества");
         } catch (Exception e) {
-            showError("Failed to update equipment: " + e.getMessage());
+            showError("Ошибка при обновлении оборудования: " + e.getMessage());
         }
     }
     
     @FXML
-    private void handleDeleteEquipment() {
-        if (selectedEquipment == null) {
-            showError("No equipment selected");
-            return;
+    private void handleDeleteEquipment(AdditionalEquipment equipment) {
+        equipmentService.deleteEquipment(equipment.getId());
+        refreshTable();
+    }
+    
+    @FXML
+    private void handleMassDelete() {
+        ObservableList<AdditionalEquipment> selectedItems = FXCollections.observableArrayList();
+        for (AdditionalEquipment equipment : equipmentList) {
+            if (equipmentTable.getSelectionModel().isSelected(equipmentTable.getItems().indexOf(equipment))) {
+                selectedItems.add(equipment);
+            }
         }
         
-        try {
-            equipmentService.deleteEquipment(selectedEquipment.getId());
-            refreshTable();
-            clearFields();
-        } catch (Exception e) {
-            showError("Failed to delete equipment: " + e.getMessage());
+        for (AdditionalEquipment equipment : selectedItems) {
+            equipmentService.deleteEquipment(equipment.getId());
         }
+        refreshTable();
     }
     
     @FXML
     private void handleSearch() {
-        String name = searchNameField.getText();
-        String type = searchTypeField.getText();
-        String status = searchStatusField.getText();
-        
+        String id = idFilterField.getText().trim();
+        String name = nameFilterField.getText().trim();
+        String minPrice = minPriceFilterField.getText().trim();
+        String maxPrice = maxPriceFilterField.getText().trim();
+
         equipmentTable.getItems().clear();
-        equipmentTable.getItems().addAll(equipmentService.searchEquipment(name, type, status));
+        equipmentTable.getItems().addAll(equipmentService.searchEquipment(id, name, minPrice, maxPrice));
     }
     
     @FXML
     private void handleClearSearch() {
-        searchNameField.clear();
-        searchTypeField.clear();
-        searchStatusField.clear();
+        idFilterField.clear();
+        nameFilterField.clear();
+        minPriceFilterField.clear();
+        maxPriceFilterField.clear();
         refreshTable();
     }
     
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        alert.setTitle("Ошибка");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();

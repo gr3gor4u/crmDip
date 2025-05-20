@@ -19,12 +19,14 @@
     </HBox>
 
     <GridPane hgap="10" vgap="5">
-        <Label text="Фамилия:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="lastNameFilterField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-        <Label text="Имя:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-        <TextField fx:id="firstNameFilterField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
-        <Label text="Отчество:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-        <TextField fx:id="middleNameFilterField" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+        <Label text="ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="idFilterField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Фамилия:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+        <TextField fx:id="lastNameFilterField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <Label text="Имя:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+        <TextField fx:id="firstNameFilterField" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+        <Label text="Отчество:" GridPane.columnIndex="6" GridPane.rowIndex="0"/>
+        <TextField fx:id="middleNameFilterField" GridPane.columnIndex="7" GridPane.rowIndex="0"/>
         
         <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
         <TextField fx:id="emailFilterField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
@@ -47,8 +49,8 @@
             <TableColumn fx:id="childrenCountColumn" text="Количество детей"/>
             <TableColumn fx:id="emailColumn" text="Email"/>
             <TableColumn fx:id="phoneColumn" text="Телефон"/>
-            <TableColumn fx:id="passportColumn" text="Паспорт"/>
-            <TableColumn fx:id="registrationDateColumn" text="Дата регистрации"/>
+            <TableColumn fx:id="passportNumberColumn" text="Паспорт"/>
+            <TableColumn fx:id="createdAtColumn" text="Дата регистрации"/>
             <TableColumn fx:id="actionsColumn" text="Действия"/>
         </columns>
     </TableView>

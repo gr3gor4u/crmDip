@@ -58,11 +58,20 @@ public class DashboardController {
     }
 
     private void updateStatistics() {
-        totalCustomersLabel.setText(String.valueOf(customerService.getAllCustomers().size()));
-        totalCarsLabel.setText(String.valueOf(carService.getAllCars().size()));
-        availableCarsLabel.setText(String.valueOf(
-            carService.getAllCars().stream().filter(car -> "AVAILABLE".equals(car.getStatus())).count()
-        ));
+        try {
+            int totalCustomers = customerService.getAllCustomers().size();
+            int totalCars = carService.getAllCars().size();
+            int availableCars = (int) carService.getAllCars().stream()
+                .filter(car -> "AVAILABLE".equals(car.getStatus()))
+                .count();
+
+            totalCustomersLabel.setText(String.valueOf(totalCustomers));
+            totalCarsLabel.setText(String.valueOf(totalCars));
+            availableCarsLabel.setText(String.valueOf(availableCars));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("Ошибка обновления статистики", "Не удалось обновить статистику: " + e.getMessage());
+        }
     }
 
     public void setUser(User user) {

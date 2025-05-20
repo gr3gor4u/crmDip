@@ -47,31 +47,39 @@ public class CustomerService {
         return null;
     }
 
-    public List<Customer> searchCustomers(String firstName, String lastName, String middleName, 
-                                        String email, String passportNumber) {
+    public List<Customer> searchCustomers(String id, String firstName, String lastName, String middleName, 
+                                        String email, String passportNumber, String phone) {
         List<Customer> customers = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM customers WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
+        if (id != null && !id.isEmpty()) {
+            sql.append(" AND id = ?");
+            params.add(Long.parseLong(id));
+        }
         if (firstName != null && !firstName.isEmpty()) {
-            sql.append(" AND first_name LIKE ?");
+            sql.append(" AND first_name ILIKE ?");
             params.add("%" + firstName + "%");
         }
         if (lastName != null && !lastName.isEmpty()) {
-            sql.append(" AND last_name LIKE ?");
+            sql.append(" AND last_name ILIKE ?");
             params.add("%" + lastName + "%");
         }
         if (middleName != null && !middleName.isEmpty()) {
-            sql.append(" AND middle_name LIKE ?");
+            sql.append(" AND middle_name ILIKE ?");
             params.add("%" + middleName + "%");
         }
         if (email != null && !email.isEmpty()) {
-            sql.append(" AND email LIKE ?");
+            sql.append(" AND email ILIKE ?");
             params.add("%" + email + "%");
         }
         if (passportNumber != null && !passportNumber.isEmpty()) {
-            sql.append(" AND passport_number LIKE ?");
+            sql.append(" AND passport_number ILIKE ?");
             params.add("%" + passportNumber + "%");
+        }
+        if (phone != null && !phone.isEmpty()) {
+            sql.append(" AND phone ILIKE ?");
+            params.add("%" + phone + "%");
         }
 
         sql.append(" ORDER BY last_name, first_name");
@@ -88,7 +96,7 @@ public class CustomerService {
                 customers.add(mapCustomerFromResultSet(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error searching customers", e);
+            throw new RuntimeException("Ошибка при поиске клиентов", e);
         }
         return customers;
     }

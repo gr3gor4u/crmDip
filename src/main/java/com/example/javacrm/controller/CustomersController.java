@@ -24,8 +24,8 @@ public class CustomersController {
     @FXML private TableColumn<Customer, Integer> childrenCountColumn;
     @FXML private TableColumn<Customer, String> emailColumn;
     @FXML private TableColumn<Customer, String> phoneColumn;
-    @FXML private TableColumn<Customer, String> passportColumn;
-    @FXML private TableColumn<Customer, String> registrationDateColumn;
+    @FXML private TableColumn<Customer, String> passportNumberColumn;
+    @FXML private TableColumn<Customer, String> createdAtColumn;
     @FXML private TableColumn<Customer, Void> actionsColumn;
 
     @FXML private TextField lastNameFilterField;
@@ -34,6 +34,7 @@ public class CustomersController {
     @FXML private TextField emailFilterField;
     @FXML private TextField passportFilterField;
     @FXML private TextField phoneFilterField;
+    @FXML private TextField idFilterField;
 
     private CustomerService customerService;
 
@@ -50,8 +51,8 @@ public class CustomersController {
         childrenCountColumn.setCellValueFactory(new PropertyValueFactory<>("childrenCount"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
-        passportColumn.setCellValueFactory(new PropertyValueFactory<>("passport"));
-        registrationDateColumn.setCellValueFactory(new PropertyValueFactory<>("registrationDate"));
+        passportNumberColumn.setCellValueFactory(new PropertyValueFactory<>("passportNumber"));
+        createdAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
         
         // Добавление кнопок действий
         actionsColumn.setCellFactory(col -> new TableCell<>() {
@@ -156,11 +157,21 @@ public class CustomersController {
 
     @FXML
     private void handleSearch() {
-        // TODO: Реализовать поиск
+        String id = idFilterField.getText().trim();
+        String lastName = lastNameFilterField.getText().trim();
+        String firstName = firstNameFilterField.getText().trim();
+        String middleName = middleNameFilterField.getText().trim();
+        String email = emailFilterField.getText().trim();
+        String passport = passportFilterField.getText().trim();
+        String phone = phoneFilterField.getText().trim();
+
+        customersTable.getItems().clear();
+        customersTable.getItems().addAll(customerService.searchCustomers(id, firstName, lastName, middleName, email, passport, phone));
     }
 
     @FXML
     private void handleClearSearch() {
+        idFilterField.clear();
         lastNameFilterField.clear();
         firstNameFilterField.clear();
         middleNameFilterField.clear();
