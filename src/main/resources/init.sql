@@ -102,12 +102,14 @@ CREATE TABLE deals (
     id BIGSERIAL PRIMARY KEY,
     car_id BIGINT NOT NULL,
     customer_id BIGINT NOT NULL,
+    manager_id BIGINT NOT NULL,
     insurance_id BIGINT,
     total_price DECIMAL(10,2) NOT NULL,
     status VARCHAR(20) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (car_id) REFERENCES cars(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
+    FOREIGN KEY (manager_id) REFERENCES users(id),
     FOREIGN KEY (insurance_id) REFERENCES insurance(id)
 );
 

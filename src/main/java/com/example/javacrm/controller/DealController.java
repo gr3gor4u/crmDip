@@ -249,6 +249,10 @@ public class DealController {
             Car car = carService.getCarByVin(vin);
             if (car != null) {
                 total = total.add(car.getPrice());
+                selectedCar = car;
+                // Показываем информацию об автомобиле
+                showSuccess("Найден автомобиль: " + car.getBrand() + " " + car.getModel() + 
+                          "\nЦена: " + car.getPrice() + " руб.");
             }
         }
         
@@ -261,8 +265,6 @@ public class DealController {
         
         // Добавляем стоимость страховки (если есть)
         if (!noInsuranceCheckBox.isSelected() && !insuranceNumberField.getText().isEmpty()) {
-            // Здесь можно добавить логику расчета стоимости страховки
-            // Пока просто добавляем фиксированную сумму
             total = total.add(new BigDecimal("10000"));
         }
         
@@ -273,14 +275,20 @@ public class DealController {
     private void handleCarVinChange() {
         String vin = carVinField.getText();
         if (vin != null && !vin.isEmpty()) {
-            selectedCar = carService.getCarByVin(vin);
-            if (selectedCar == null) {
+            Car car = carService.getCarByVin(vin);
+            if (car == null) {
                 showError("Автомобиль с таким VIN не найден");
                 carVinField.setStyle("-fx-border-color: red;");
+                selectedCar = null;
             } else {
                 carVinField.setStyle("");
+                selectedCar = car;
                 calculateTotalPrice();
             }
+        } else {
+            carVinField.setStyle("");
+            selectedCar = null;
+            calculateTotalPrice();
         }
     }
     
@@ -309,28 +317,48 @@ public class DealController {
                 return;
             }
             
+            // Устанавливаем данные автомобиля
             currentDeal.setCar(selectedCar);
             currentDeal.setCarId(selectedCar.getId());
+            
+            // Устанавливаем данные клиента
             currentDeal.setCustomer(selectedCustomer);
             currentDeal.setCustomerId(selectedCustomer.getId());
+            
+            // Устанавливаем данные менеджера
             currentDeal.setManager(selectedManager);
             currentDeal.setManagerId(selectedManager.getId());
-            currentDeal.setInsuranceNumber(insuranceNumberField.getText());
+            
+            // Устанавливаем данные страховки (если есть)
+            if (!noInsuranceCheckBox.isSelected()) {
+                currentDeal.setInsuranceNumber(insuranceNumberField.getText());
+            }
             currentDeal.setNoInsurance(noInsuranceCheckBox.isSelected());
-            currentDeal.setTotalPrice(new BigDecimal(totalPriceField.getText()));
+            
+            // Устанавливаем общую стоимость
+            try {
+                currentDeal.setTotalPrice(new BigDecimal(totalPriceField.getText()));
+            } catch (NumberFormatException e) {
+                showError("Некорректная общая стоимость");
+                return;
+            }
+            
+            // Устанавливаем статус и дату
             currentDeal.setStatus(statusComboBox.getValue());
             currentDeal.setDealDate(dealDatePicker.getValue());
             
-            // Добавляем оборудование
-            if (!noEquipmentCheckBox.isSelected()) {
+            // Добавляем оборудование (если есть)
+            if (!noEquipmentCheckBox.isSelected() && !equipmentTable.getItems().isEmpty()) {
                 currentDeal.setEquipment(equipmentTable.getItems());
             }
             
             try {
                 if (currentDeal.getId() == null) {
                     dealService.createDeal(currentDeal);
+                    showSuccess("Сделка успешно создана");
                 } else {
                     dealService.updateDeal(currentDeal);
+                    showSuccess("Сделка успешно обновлена");
                 }
                 closeDialog();
             } catch (Exception e) {

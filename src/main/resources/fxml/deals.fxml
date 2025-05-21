@@ -21,13 +21,13 @@
     <!-- Форма поиска -->
     <GridPane hgap="10" vgap="5">
         <Label text="Клиент:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="searchCustomerField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <TextField fx:id="searchCustomerField" promptText="Введите фамилию клиента" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
         
         <Label text="Автомобиль:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-        <TextField fx:id="searchCarField" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+        <TextField fx:id="searchCarField" promptText="Введите марку или модель" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
         
         <Label text="Статус:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-        <TextField fx:id="searchStatusField" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+        <ComboBox fx:id="searchStatusComboBox" promptText="Выберите статус" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
         
         <Button text="Поиск" onAction="#handleSearch" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
         <Button text="Очистить" onAction="#handleClearSearch" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
@@ -44,21 +44,4 @@
             <TableColumn fx:id="actionsColumn" text="Действия" prefWidth="150"/>
         </columns>
     </TableView>
-    
-    <TitledPane text="Additional Equipment" expanded="true">
-        <VBox spacing="10">
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <CheckBox fx:id="noEquipmentCheckBox" text="No Additional Equipment"/>
-            </HBox>
-            
-            <TableView fx:id="equipmentTable" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="equipmentNameColumn" text="Equipment" prefWidth="200"/>
-                    <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100"/>
-                    <TableColumn fx:id="priceColumn" text="Price" prefWidth="100"/>
-                </columns>
-            </TableView>
-        </VBox>
-    </TitledPane>
-    
 </VBox> 

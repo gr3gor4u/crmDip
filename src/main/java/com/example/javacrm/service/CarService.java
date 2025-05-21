@@ -37,7 +37,7 @@ public class CarService {
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
                 car.setPrice(rs.getBigDecimal("price"));
                 car.setColor(rs.getString("color"));
                 car.setKuzov(rs.getString("kuzov"));

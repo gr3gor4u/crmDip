@@ -25,6 +25,10 @@ import java.util.Optional;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.layout.Region;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
+import java.util.List;
 
 public class DealsController {
     @FXML
@@ -36,7 +40,7 @@ public class DealsController {
     @FXML
     private TableColumn<Deal, String> carColumn;
     @FXML
-    private TableColumn<Deal, BigDecimal> amountColumn;
+    private TableColumn<Deal, Double> amountColumn;
     @FXML
     private TableColumn<Deal, String> dateColumn;
     @FXML
@@ -49,7 +53,7 @@ public class DealsController {
     @FXML
     private TextField searchCarField;
     @FXML
-    private TextField searchStatusField;
+    private ComboBox<String> searchStatusComboBox;
     
     private DealService dealService;
     private CustomerService customerService;
@@ -72,57 +76,38 @@ public class DealsController {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         customerColumn.setCellValueFactory(cellData -> {
             Deal deal = cellData.getValue();
-            if (deal != null && deal.getCustomer() != null) {
-                return new SimpleStringProperty(deal.getCustomer().getLastName() + " " + deal.getCustomer().getFirstName());
-            }
-            return new SimpleStringProperty("");
+            String fullName = deal.getCustomer().getLastName() + " " + 
+                            deal.getCustomer().getFirstName() + " " + 
+                            (deal.getCustomer().getMiddleName() != null ? deal.getCustomer().getMiddleName() : "");
+            return new SimpleStringProperty(fullName);
         });
         carColumn.setCellValueFactory(cellData -> {
             Deal deal = cellData.getValue();
-            if (deal != null && deal.getCar() != null) {
-                return new SimpleStringProperty(deal.getCar().getBrand() + " " + deal.getCar().getModel());
-            }
-            return new SimpleStringProperty("");
+            String carInfo = deal.getCar().getBrand() + " " + deal.getCar().getModel();
+            return new SimpleStringProperty(carInfo);
         });
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
-        dateColumn.setCellValueFactory(cellData -> {
-            Deal deal = cellData.getValue();
-            if (deal != null && deal.getDealDate() != null) {
-                return new SimpleStringProperty(deal.getDealDate().toString());
-            }
-            return new SimpleStringProperty("");
-        });
-        statusColumn.setCellValueFactory(cellData -> {
-            Deal deal = cellData.getValue();
-            if (deal != null && deal.getStatus() != null) {
-                return new SimpleStringProperty(deal.getStatus());
-            }
-            return new SimpleStringProperty("");
-        });
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("dealDate"));
+        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         
-        // Добавление кнопок действий
+        // Настройка колонки с действиями
         actionsColumn.setCellFactory(col -> new TableCell<>() {
             private final Button editButton = new Button("Редактировать");
             private final Button deleteButton = new Button("Удалить");
+            private final HBox buttons = new HBox(5, editButton, deleteButton);
             
             {
+                buttons.setAlignment(Pos.CENTER);
                 editButton.setOnAction(e -> {
-                    Deal deal = getTableView().getItems().get(getIndex());
-                    handleEditDeal(deal);
-                });
-                
-                deleteButton.setOnAction(e -> {
-                    Deal deal = getTableView().getItems().get(getIndex());
+                    Deal deal = getTableRow().getItem();
                     if (deal != null) {
-                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                        alert.setTitle("Подтверждение удаления");
-                        alert.setHeaderText("Удаление сделки");
-                        alert.setContentText("Вы уверены, что хотите удалить эту сделку?");
-                        
-                        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                            dealService.deleteDeal(deal.getId());
-                            refreshTable();
-                        }
+                        handleEditDeal(deal);
+                    }
+                });
+                deleteButton.setOnAction(e -> {
+                    Deal deal = getTableRow().getItem();
+                    if (deal != null) {
+                        handleDeleteDeal(deal);
                     }
                 });
             }
@@ -130,21 +115,38 @@ public class DealsController {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    HBox buttons = new HBox(5, editButton, deleteButton);
-                    setGraphic(buttons);
-                }
+                setGraphic(empty ? null : buttons);
             }
         });
         
-        refreshTable();
+        // Инициализация ComboBox статусов
+        searchStatusComboBox.setItems(FXCollections.observableArrayList(
+            "Новая",
+            "В процессе",
+            "Завершена",
+            "Отменена"
+        ));
+        
+        // Загрузка данных
+        refreshDeals();
     }
     
-    private void refreshTable() {
-        dealsTable.getItems().clear();
-        dealsTable.getItems().addAll(dealService.getAllDeals());
+    @FXML
+    private void handleSearch() {
+        String customerName = searchCustomerField.getText().trim();
+        String carInfo = searchCarField.getText().trim();
+        String status = searchStatusComboBox.getValue();
+        
+        List<Deal> deals = dealService.searchDeals(customerName, carInfo, status);
+        dealsTable.setItems(FXCollections.observableArrayList(deals));
+    }
+    
+    @FXML
+    private void handleClearSearch() {
+        searchCustomerField.clear();
+        searchCarField.clear();
+        searchStatusComboBox.setValue(null);
+        refreshDeals();
     }
     
     @FXML
@@ -166,36 +168,18 @@ public class DealsController {
             dialogStage.showAndWait();
             
             // Обновляем таблицу после закрытия диалога
-            refreshTable();
+            refreshDeals();
         } catch (IOException e) {
             e.printStackTrace();
             showError("Ошибка при открытии формы создания сделки");
         }
     }
     
-    @FXML
-    private void handleSearch() {
-        String customerName = searchCustomerField.getText();
-        String carModel = searchCarField.getText();
-        String status = searchStatusField.getText();
-        
-        dealsTable.getItems().clear();
-        dealsTable.getItems().addAll(dealService.searchDeals(customerName, carModel, status));
-    }
-    
-    @FXML
-    private void handleClearSearch() {
-        searchCustomerField.clear();
-        searchCarField.clear();
-        searchStatusField.clear();
-        refreshTable();
-    }
-    
     private void handleEditDeal(Deal deal) {
         boolean okClicked = showDealDialog(deal);
         if (okClicked) {
             dealService.updateDeal(deal);
-            refreshTable();
+            refreshDeals();
         }
     }
     
@@ -218,6 +202,25 @@ public class DealsController {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    private void handleDeleteDeal(Deal deal) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Подтверждение удаления");
+        alert.setHeaderText("Удаление сделки");
+        alert.setContentText("Вы уверены, что хотите удалить эту сделку?");
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                dealService.deleteDeal(deal.getId());
+                refreshDeals();
+            }
+        });
+    }
+    
+    private void refreshDeals() {
+        List<Deal> deals = dealService.getAllDeals();
+        dealsTable.setItems(FXCollections.observableArrayList(deals));
     }
     
     private void showError(String message) {

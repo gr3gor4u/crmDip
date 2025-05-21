@@ -93,7 +93,7 @@ public class DatabaseService {
                     vin VARCHAR(17) NOT NULL UNIQUE,
                     brand VARCHAR(50) NOT NULL,
                     model VARCHAR(50) NOT NULL,
-                    year INTEGER NOT NULL,
+                    car_year INTEGER NOT NULL,
                     color VARCHAR(30),
                     price DECIMAL(10,2) NOT NULL,
                     status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE',
@@ -195,7 +195,7 @@ public class DatabaseService {
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
                 car.setPrice(rs.getBigDecimal("price"));
                 car.setColor(rs.getString("color"));
                 car.setKuzov(rs.getString("kuzov"));
@@ -226,7 +226,7 @@ public class DatabaseService {
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
                 car.setPrice(rs.getBigDecimal("price"));
                 car.setColor(rs.getString("color"));
                 car.setKuzov(rs.getString("kuzov"));
@@ -242,7 +242,7 @@ public class DatabaseService {
     }
 
     public void addCar(Car car) {
-        String sql = "INSERT INTO cars (vin, brand, model, year, price, color, kuzov, obem_dvig, horse_power, status, created_at) " +
+        String sql = "INSERT INTO cars (vin, brand, model, car_year, price, color, kuzov, obem_dvig, horse_power, status, created_at) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = getConnection();
@@ -274,7 +274,7 @@ public class DatabaseService {
     public void updateCar(Car car) {
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                 "UPDATE cars SET vin = ?, brand = ?, model = ?, year = ?, color = ?, " +
+                 "UPDATE cars SET vin = ?, brand = ?, model = ?, car_year = ?, color = ?, " +
                  "price = ?, kuzov = ?, obem_dvig = ?, horse_power = ?, status = ? WHERE id = ?")) {
             
             stmt.setString(1, car.getVin());
@@ -346,7 +346,7 @@ public class DatabaseService {
                 car.setVin(rs.getString("vin"));
                 car.setBrand(rs.getString("brand"));
                 car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
+                car.setYear(rs.getInt("car_year"));
                 car.setPrice(rs.getBigDecimal("price"));
                 car.setColor(rs.getString("color"));
                 car.setKuzov(rs.getString("kuzov"));
@@ -363,8 +363,8 @@ public class DatabaseService {
 
     // Методы для работы со сделками
     public Long saveDeal(Deal deal) {
-        String sql = "INSERT INTO deals (customer_id, car_id, manager_id, total_price, status, deal_date, notes) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO deals (customer_id, car_id, manager_id, total_price, status, deal_date, " +
+                    "insurance_number, no_insurance, notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -375,16 +375,18 @@ public class DatabaseService {
             stmt.setBigDecimal(4, deal.getTotalPrice());
             stmt.setString(5, deal.getStatus());
             stmt.setDate(6, java.sql.Date.valueOf(deal.getDealDate()));
-            stmt.setString(7, deal.getNotes());
+            stmt.setString(7, deal.getInsuranceNumber());
+            stmt.setBoolean(8, deal.isNoInsurance());
+            stmt.setString(9, deal.getNotes());
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getLong(1);
                 }
             }
-            throw new RuntimeException("Failed to get generated deal ID");
+            throw new RuntimeException("Не удалось получить ID созданной сделки");
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to save deal", e);
+            throw new RuntimeException("Ошибка при сохранении сделки: " + e.getMessage(), e);
         }
     }
 
@@ -511,23 +513,27 @@ public class DatabaseService {
         }
     }
 
-    public List<Deal> searchDeals(String customerName, String carModel, String status) {
+    public List<Deal> searchDeals(String customerName, String carInfo, String status) {
         List<Deal> deals = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT d.* FROM deals d " +
+            "SELECT d.*, c.first_name, c.last_name, c.middle_name, " +
+            "car.brand, car.model, car.vin " +
+            "FROM deals d " +
             "JOIN customers c ON d.customer_id = c.id " +
             "JOIN cars car ON d.car_id = car.id " +
             "WHERE 1=1");
         List<Object> params = new ArrayList<>();
         
         if (customerName != null && !customerName.isEmpty()) {
-            sql.append(" AND (c.first_name ILIKE ? OR c.last_name ILIKE ?)");
+            sql.append(" AND (c.first_name ILIKE ? OR c.last_name ILIKE ? OR c.middle_name ILIKE ?)");
+            params.add("%" + customerName + "%");
             params.add("%" + customerName + "%");
             params.add("%" + customerName + "%");
         }
-        if (carModel != null && !carModel.isEmpty()) {
-            sql.append(" AND car.model ILIKE ?");
-            params.add("%" + carModel + "%");
+        if (carInfo != null && !carInfo.isEmpty()) {
+            sql.append(" AND (car.brand ILIKE ? OR car.model ILIKE ?)");
+            params.add("%" + carInfo + "%");
+            params.add("%" + carInfo + "%");
         }
         if (status != null && !status.isEmpty()) {
             sql.append(" AND d.status = ?");
@@ -553,6 +559,23 @@ public class DatabaseService {
                 deal.setTotalPrice(rs.getBigDecimal("total_price"));
                 deal.setStatus(rs.getString("status"));
                 deal.setDealDate(rs.getDate("deal_date").toLocalDate());
+                
+                // Set customer
+                Customer customer = new Customer();
+                customer.setId(rs.getLong("customer_id"));
+                customer.setFirstName(rs.getString("first_name"));
+                customer.setLastName(rs.getString("last_name"));
+                customer.setMiddleName(rs.getString("middle_name"));
+                deal.setCustomer(customer);
+                
+                // Set car
+                Car car = new Car();
+                car.setId(rs.getLong("car_id"));
+                car.setBrand(rs.getString("brand"));
+                car.setModel(rs.getString("model"));
+                car.setVin(rs.getString("vin"));
+                deal.setCar(car);
+                
                 deals.add(deal);
             }
         } catch (SQLException e) {
