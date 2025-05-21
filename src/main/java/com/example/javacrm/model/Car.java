@@ -1,14 +1,17 @@
 package com.example.javacrm.model;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import lombok.Data;
 
+@Data
 public class Car {
     private Long id;
     private String vin;
     private String brand;
     private String model;
     private Integer year;
-    private Double price;
+    private BigDecimal price;
     private String color;
     private String kuzov;
     private Double engineVolume;
@@ -61,11 +64,11 @@ public class Car {
         this.year = year;
     }
 
-    public Double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -119,7 +122,7 @@ public class Car {
 
     @Override
     public String toString() {
-        return brand + " " + model + " (" + year + ")";
+        return String.format("%s %s (%s) - %s", brand, model, year, vin);
     }
 
     public boolean isAvailable() {

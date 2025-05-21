@@ -3,25 +3,33 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.DealDialogController">
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+<DialogPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.DealDialogController">
+    <content>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
 
-    <GridPane vgap="10" hgap="10">
-        <Label text="Клиент:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-        <TextField fx:id="customerField" GridPane.columnIndex="1" GridPane.rowIndex="0" editable="false"/>
+            <GridPane vgap="10" hgap="10">
+                <Label text="Клиент:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <TextField fx:id="customerField" GridPane.columnIndex="1" GridPane.rowIndex="0" editable="false"/>
 
-        <Label text="Автомобиль:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-        <TextField fx:id="carField" GridPane.columnIndex="1" GridPane.rowIndex="1" editable="false"/>
+                <Label text="Автомобиль:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <TextField fx:id="carField" GridPane.columnIndex="1" GridPane.rowIndex="1" editable="false"/>
 
-        <Label text="Сумма:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-        <TextField fx:id="amountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                <Label text="Сумма:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                <TextField fx:id="amountField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
 
-        <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-        <ComboBox fx:id="statusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                <ComboBox fx:id="statusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
 
-        <Label text="Примечания:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <TextField fx:id="notesField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-    </GridPane>
-</VBox> 
+                <Label text="Примечания:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                <TextField fx:id="notesField" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+            </GridPane>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane> 

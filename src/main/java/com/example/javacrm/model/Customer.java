@@ -1,5 +1,8 @@
 package com.example.javacrm.model;
 
+import lombok.Data;
+
+@Data
 public class Customer {
     private Long id;
     private String firstName;
@@ -111,5 +114,10 @@ public class Customer {
 
     public String getFullName() {
         return lastName + " " + firstName + (middleName != null ? " " + middleName : "");
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", lastName, firstName, middleName != null ? middleName : "");
     }
 } 

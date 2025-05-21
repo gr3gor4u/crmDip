@@ -11,14 +11,20 @@ import com.example.javacrm.service.DatabaseService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.util.StringConverter;
-import javafx.util.converter.LocalDateTimeStringConverter;
 import javafx.scene.layout.HBox;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import javafx.beans.property.SimpleStringProperty;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.io.IOException;
+import java.util.Optional;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.beans.property.SimpleObjectProperty;
 
 public class DealsController {
     @FXML
@@ -30,7 +36,7 @@ public class DealsController {
     @FXML
     private TableColumn<Deal, String> carColumn;
     @FXML
-    private TableColumn<Deal, Double> amountColumn;
+    private TableColumn<Deal, BigDecimal> amountColumn;
     @FXML
     private TableColumn<Deal, String> dateColumn;
     @FXML
@@ -39,20 +45,9 @@ public class DealsController {
     private TableColumn<Deal, Void> actionsColumn;
     
     @FXML
-    private TextField customerIdField;
+    private TextField searchCustomerField;
     @FXML
-    private TextField carIdField;
-    @FXML
-    private TextField insuranceIdField;
-    @FXML
-    private TextField totalPriceField;
-    @FXML
-    private TextField statusField;
-    
-    @FXML
-    private TextField searchCustomerIdField;
-    @FXML
-    private TextField searchCarIdField;
+    private TextField searchCarField;
     @FXML
     private TextField searchStatusField;
     
@@ -75,10 +70,35 @@ public class DealsController {
         
         // Инициализация колонок таблицы
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        customerColumn.setCellValueFactory(new PropertyValueFactory<>("customer"));
-        carColumn.setCellValueFactory(new PropertyValueFactory<>("car"));
+        customerColumn.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            if (deal != null && deal.getCustomer() != null) {
+                return new SimpleStringProperty(deal.getCustomer().getLastName() + " " + deal.getCustomer().getFirstName());
+            }
+            return new SimpleStringProperty("");
+        });
+        carColumn.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            if (deal != null && deal.getCar() != null) {
+                return new SimpleStringProperty(deal.getCar().getBrand() + " " + deal.getCar().getModel());
+            }
+            return new SimpleStringProperty("");
+        });
         amountColumn.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
-        dateColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
+        dateColumn.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            if (deal != null && deal.getDealDate() != null) {
+                return new SimpleStringProperty(deal.getDealDate().toString());
+            }
+            return new SimpleStringProperty("");
+        });
+        statusColumn.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            if (deal != null && deal.getStatus() != null) {
+                return new SimpleStringProperty(deal.getStatus());
+            }
+            return new SimpleStringProperty("");
+        });
         
         // Добавление кнопок действий
         actionsColumn.setCellFactory(col -> new TableCell<>() {
@@ -127,86 +147,77 @@ public class DealsController {
         dealsTable.getItems().addAll(dealService.getAllDeals());
     }
     
-    private void populateFields(Deal deal) {
-        customerIdField.setText(String.valueOf(deal.getCustomerId()));
-        carIdField.setText(String.valueOf(deal.getCarId()));
-        insuranceIdField.setText(String.valueOf(deal.getInsuranceId()));
-        totalPriceField.setText(String.valueOf(deal.getTotalPrice()));
-        statusField.setText(deal.getStatus());
-    }
-    
-    private void clearFields() {
-        customerIdField.clear();
-        carIdField.clear();
-        insuranceIdField.clear();
-        totalPriceField.clear();
-        statusField.clear();
-        selectedDeal = null;
-    }
-    
     @FXML
     private void handleAddDeal() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Информация");
-        alert.setHeaderText(null);
-        alert.setContentText("Функционал добавления сделки будет реализован позже");
-        alert.showAndWait();
-    }
-    
-    @FXML
-    private void handleUpdateDeal() {
-        if (selectedDeal == null) {
-            showError("No deal selected");
-            return;
-        }
-        
         try {
-            if (!customerIdField.getText().isEmpty()) {
-                selectedDeal.setCustomerId(Long.parseLong(customerIdField.getText()));
-            }
-            if (!carIdField.getText().isEmpty()) {
-                selectedDeal.setCarId(Long.parseLong(carIdField.getText()));
-            }
-            if (!insuranceIdField.getText().isEmpty()) {
-                selectedDeal.setInsuranceId(Long.parseLong(insuranceIdField.getText()));
-            }
-            selectedDeal.setTotalPrice(Double.parseDouble(totalPriceField.getText()));
-            selectedDeal.setStatus(statusField.getText());
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/deal-form.fxml"));
+            Parent page = loader.load();
             
-            dealService.updateDeal(selectedDeal);
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Новая сделка");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(dealsTable.getScene().getWindow());
+            
+            Scene scene = new Scene(page);
+            dialogStage.setScene(scene);
+            
+            DealController controller = loader.getController();
+            
+            dialogStage.showAndWait();
+            
+            // Обновляем таблицу после закрытия диалога
             refreshTable();
-            clearFields();
-        } catch (NumberFormatException e) {
-            showError("Invalid price or ID format");
-        } catch (Exception e) {
-            showError("Failed to update deal: " + e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Ошибка при открытии формы создания сделки");
         }
     }
     
     @FXML
     private void handleSearch() {
-        String customerId = searchCustomerIdField.getText();
-        String carId = searchCarIdField.getText();
+        String customerName = searchCustomerField.getText();
+        String carModel = searchCarField.getText();
         String status = searchStatusField.getText();
         
         dealsTable.getItems().clear();
-        dealsTable.getItems().addAll(dealService.searchDeals(customerId, carId, status));
+        dealsTable.getItems().addAll(dealService.searchDeals(customerName, carModel, status));
     }
     
     @FXML
     private void handleClearSearch() {
-        searchCustomerIdField.clear();
-        searchCarIdField.clear();
+        searchCustomerField.clear();
+        searchCarField.clear();
         searchStatusField.clear();
         refreshTable();
     }
     
     private void handleEditDeal(Deal deal) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Информация");
-        alert.setHeaderText(null);
-        alert.setContentText("Функционал редактирования сделки будет реализован позже");
-        alert.showAndWait();
+        boolean okClicked = showDealDialog(deal);
+        if (okClicked) {
+            dealService.updateDeal(deal);
+            refreshTable();
+        }
+    }
+    
+    private boolean showDealDialog(Deal deal) {
+        try {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/fxml/deal-dialog.fxml"));
+            DialogPane dialogPane = loader.load();
+            
+            DealDialogController controller = loader.getController();
+            controller.setDeal(deal);
+            
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setDialogPane(dialogPane);
+            dialog.setTitle("Редактирование сделки");
+            
+            Optional<ButtonType> result = dialog.showAndWait();
+            return result.isPresent() && result.get() == ButtonType.OK;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     
     private void showError(String message) {
@@ -215,5 +226,13 @@ public class DealsController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+    
+    /**
+     * Обработчик кнопки "Создать сделку" из deals.fxml
+     */
+    @FXML
+    private void handleCreateDeal() {
+        handleAddDeal();
     }
 } 

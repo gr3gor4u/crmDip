@@ -2,12 +2,14 @@ package com.example.javacrm.model;
 
 import java.time.LocalDateTime;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 public class AdditionalEquipment {
     private Long id;
     private String name;
-    private Double price;
+    private String description;
+    private BigDecimal price;
     private Integer quantity;
     private Boolean available;
     private LocalDateTime createdAt;
@@ -15,7 +17,7 @@ public class AdditionalEquipment {
     public AdditionalEquipment() {
     }
 
-    public AdditionalEquipment(Long id, String name, Double price, Integer quantity, Boolean available) {
+    public AdditionalEquipment(Long id, String name, BigDecimal price, Integer quantity, Boolean available) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -40,11 +42,19 @@ public class AdditionalEquipment {
         this.name = name;
     }
 
-    public Double getPrice() {
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

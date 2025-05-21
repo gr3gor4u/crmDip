@@ -103,7 +103,7 @@ public class CustomerService {
 
     public void addCustomer(Customer customer) {
         String sql = "INSERT INTO customers (first_name, last_name, middle_name, marital_status, " +
-                    "children_count, email, passport_number) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "children_count, email, phone, passport_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = databaseService.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -114,7 +114,8 @@ public class CustomerService {
             pstmt.setString(4, customer.getMaritalStatus());
             pstmt.setInt(5, customer.getChildrenCount());
             pstmt.setString(6, customer.getEmail());
-            pstmt.setString(7, customer.getPassportNumber());
+            pstmt.setString(7, customer.getPhone());
+            pstmt.setString(8, customer.getPassportNumber());
             
             pstmt.executeUpdate();
             
@@ -130,7 +131,7 @@ public class CustomerService {
 
     public void updateCustomer(Customer customer) {
         String sql = "UPDATE customers SET first_name = ?, last_name = ?, middle_name = ?, " +
-                    "marital_status = ?, children_count = ?, email = ?, passport_number = ? WHERE id = ?";
+                    "marital_status = ?, children_count = ?, email = ?, phone = ?, passport_number = ? WHERE id = ?";
         
         try (Connection conn = databaseService.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -141,8 +142,9 @@ public class CustomerService {
             pstmt.setString(4, customer.getMaritalStatus());
             pstmt.setInt(5, customer.getChildrenCount());
             pstmt.setString(6, customer.getEmail());
-            pstmt.setString(7, customer.getPassportNumber());
-            pstmt.setLong(8, customer.getId());
+            pstmt.setString(7, customer.getPhone());
+            pstmt.setString(8, customer.getPassportNumber());
+            pstmt.setLong(9, customer.getId());
             
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -172,6 +174,7 @@ public class CustomerService {
         customer.setMaritalStatus(rs.getString("marital_status"));
         customer.setChildrenCount(rs.getInt("children_count"));
         customer.setEmail(rs.getString("email"));
+        customer.setPhone(rs.getString("phone"));
         customer.setPassportNumber(rs.getString("passport_number"));
         customer.setCreatedAt(rs.getString("created_at"));
         return customer;

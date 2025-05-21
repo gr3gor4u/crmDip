@@ -4,6 +4,7 @@ import com.example.javacrm.model.Car;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import java.math.BigDecimal;
 
 public class CarDialogController {
     @FXML private TextField modelField;
@@ -79,7 +80,7 @@ public class CarDialogController {
             car.setKuzov(kuzovField.getText());
             car.setEngineVolume(Double.parseDouble(obemDvigField.getText()));
             car.setHorsePower(Integer.parseInt(horsePowerField.getText()));
-            car.setPrice(Double.parseDouble(priceField.getText()));
+            car.setPrice(new BigDecimal(priceField.getText()));
             car.setStatus(statusComboBox.getValue());
         } catch (NumberFormatException e) {
             showError("Некорректный формат числа. Проверьте числовые поля.");
@@ -110,7 +111,7 @@ public class CarDialogController {
         car.setKuzov(kuzovField.getText());
         car.setEngineVolume(Double.parseDouble(obemDvigField.getText()));
         car.setHorsePower(Integer.parseInt(horsePowerField.getText()));
-        car.setPrice(Double.parseDouble(priceField.getText()));
+        car.setPrice(new BigDecimal(priceField.getText()));
         car.setStatus(statusComboBox.getValue());
     }
 } 

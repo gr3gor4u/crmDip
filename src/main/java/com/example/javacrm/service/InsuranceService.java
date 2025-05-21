@@ -19,6 +19,30 @@ public class InsuranceService {
         this.carService = carService;
     }
 
+    public List<Insurance> getAllInsurance() {
+        return databaseService.getAllInsurance();
+    }
+
+    public Insurance getInsuranceById(Long id) {
+        return databaseService.getInsuranceById(id);
+    }
+
+    public Insurance createInsurance(Insurance insurance) {
+        return databaseService.saveInsurance(insurance);
+    }
+
+    public void updateInsurance(Insurance insurance) {
+        databaseService.updateInsurance(insurance);
+    }
+
+    public void deleteInsurance(Long id) {
+        databaseService.deleteInsurance(id);
+    }
+
+    public List<Insurance> searchInsurance(String customerName, String carVin, String status) {
+        return databaseService.searchInsurance(customerName, carVin, status);
+    }
+
     public ObservableList<Insurance> getAllInsurances() {
         ObservableList<Insurance> insurances = FXCollections.observableArrayList();
         String query = "SELECT i.*, c.first_name, c.last_name, car.brand, car.model " +
@@ -54,84 +78,6 @@ public class InsuranceService {
             e.printStackTrace();
         }
         return insurances;
-    }
-
-    public Insurance getInsuranceById(Long id) {
-        String query = "SELECT * FROM insurance WHERE id = ?";
-        
-        try (Connection conn = databaseService.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            
-            pstmt.setLong(1, id);
-            ResultSet rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                Insurance insurance = new Insurance();
-                insurance.setId(rs.getLong("id"));
-                insurance.setCustomerId(rs.getLong("customer_id"));
-                insurance.setCarVin(rs.getString("car_vin"));
-                insurance.setInsuranceType(Insurance.InsuranceType.valueOf(rs.getString("insurance_type")));
-                insurance.setInsuranceNumber(rs.getString("insurance_number"));
-                insurance.setStartDate(rs.getDate("start_date").toLocalDate());
-                insurance.setExpiryDate(rs.getDate("expiry_date").toLocalDate());
-                insurance.setStatus(rs.getString("status"));
-                return insurance;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void addInsurance(Insurance insurance) {
-        String sql = "INSERT INTO insurance (customer_id, car_vin, insurance_type, start_date, expiry_date, status) " +
-                "VALUES (?, ?, ?::insurance_type, ?, ?, ?::insurance_status)";
-        try (Connection conn = databaseService.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, insurance.getCustomerId());
-            pstmt.setString(2, insurance.getCarVin());
-            pstmt.setString(3, insurance.getInsuranceType().toString());
-            pstmt.setDate(4, java.sql.Date.valueOf(insurance.getStartDate()));
-            pstmt.setDate(5, java.sql.Date.valueOf(insurance.getExpiryDate()));
-            pstmt.setString(6, insurance.getStatus().toString());
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void updateInsurance(Insurance insurance) {
-        String query = "UPDATE insurance SET customer_id = ?, car_vin = ?, insurance_type = ?::insurance_type, " +
-                      "start_date = ?, expiry_date = ?, status = ?::insurance_status WHERE id = ?";
-
-        try (Connection conn = databaseService.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setLong(1, insurance.getCustomerId());
-            pstmt.setString(2, insurance.getCarVin());
-            pstmt.setString(3, insurance.getInsuranceType().name());
-            pstmt.setDate(4, Date.valueOf(insurance.getStartDate()));
-            pstmt.setDate(5, Date.valueOf(insurance.getExpiryDate()));
-            pstmt.setString(6, insurance.getStatus());
-            pstmt.setLong(7, insurance.getId());
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteInsurance(Long id) {
-        String query = "DELETE FROM insurance WHERE id = ?";
-
-        try (Connection conn = databaseService.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public ObservableList<Insurance> searchInsurances(String number, String vin, String customer, 

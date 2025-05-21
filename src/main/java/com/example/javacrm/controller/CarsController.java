@@ -20,6 +20,7 @@ import javafx.util.converter.LocalDateTimeStringConverter;
 import javafx.geometry.Insets;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -31,7 +32,7 @@ public class CarsController {
     @FXML private TableColumn<Car, String> brandColumn;
     @FXML private TableColumn<Car, String> modelColumn;
     @FXML private TableColumn<Car, Integer> yearColumn;
-    @FXML private TableColumn<Car, Double> priceColumn;
+    @FXML private TableColumn<Car, BigDecimal> priceColumn;
     @FXML private TableColumn<Car, String> colorColumn;
     @FXML private TableColumn<Car, String> kuzovColumn;
     @FXML private TableColumn<Car, Double> engineVolumeColumn;
@@ -84,7 +85,9 @@ public class CarsController {
                 
                 deleteButton.setOnAction(e -> {
                     Car car = getTableView().getItems().get(getIndex());
-                    handleDeleteCar(car);
+                    if (car != null) {
+                        handleDeleteCar(car);
+                    }
                 });
             }
             
@@ -95,7 +98,6 @@ public class CarsController {
                     setGraphic(null);
                 } else {
                     HBox buttons = new HBox(5, editButton, deleteButton);
-                    buttons.setPadding(new Insets(5));
                     setGraphic(buttons);
                 }
             }

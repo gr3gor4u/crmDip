@@ -2,6 +2,7 @@ package com.example.javacrm.service;
 
 import com.example.javacrm.model.User;
 import java.sql.*;
+import java.util.List;
 import java.util.Optional;
 
 public class UserService {
@@ -97,5 +98,31 @@ public class UserService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<User> getAllUsers() {
+        return databaseService.getAllUsers();
+    }
+
+    public User getUserById(Long id) {
+        Optional<User> user = databaseService.getUserById(id);
+        return user.orElse(null);
+    }
+
+    public User createUser(User user) {
+        return databaseService.saveUser(user);
+    }
+
+    public void updateUser(User user) {
+        databaseService.updateUser(user);
+    }
+
+    public void deleteUser(Long id) {
+        databaseService.deleteUser(id);
+    }
+
+    public User authenticateUser(String username, String password) {
+        Optional<User> user = databaseService.authenticateUser(username, password);
+        return user.orElse(null);
     }
 } 

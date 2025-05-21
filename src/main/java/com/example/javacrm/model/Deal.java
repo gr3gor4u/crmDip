@@ -1,134 +1,55 @@
 package com.example.javacrm.model;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
+@Data
 public class Deal {
     private Long id;
     private Long carId;
     private Long customerId;
-    private Long insuranceId;
-    private Double totalPrice;
+    private Long managerId;
+    private String insuranceNumber;
+    private boolean noInsurance;
+    private BigDecimal totalPrice;
     private String status;
-    private LocalDateTime createdAt;
+    private LocalDate dealDate;
     private List<DealEquipment> equipment;
+    private String notes;
     
-    // Relationships
-    private Customer customer;
+    // References to related entities
     private Car car;
-    private Insurance insurance;
+    private Customer customer;
+    private User manager;
 
-    public Deal() {
-        this.createdAt = LocalDateTime.now();
-        this.equipment = new ArrayList<>();
-    }
-
-    public Deal(Long id, Long carId, Long customerId, Long insuranceId, Double totalPrice, String status) {
-        this.id = id;
-        this.carId = carId;
-        this.customerId = customerId;
-        this.insuranceId = insuranceId;
-        this.totalPrice = totalPrice;
-        this.status = status;
-        this.createdAt = LocalDateTime.now();
-        this.equipment = new ArrayList<>();
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getCarId() {
-        return carId;
-    }
-
-    public void setCarId(Long carId) {
-        this.carId = carId;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-
-    public Long getInsuranceId() {
-        return insuranceId;
-    }
-
-    public void setInsuranceId(Long insuranceId) {
-        this.insuranceId = insuranceId;
-    }
-
-    public Double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public List<DealEquipment> getEquipment() {
-        return equipment;
-    }
-
-    public void setEquipment(List<DealEquipment> equipment) {
-        this.equipment = equipment;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-        if (customer != null) {
-            this.customerId = customer.getId();
-        }
-    }
-
-    public Car getCar() {
-        return car;
-    }
-
-    public void setCar(Car car) {
-        this.car = car;
-        if (car != null) {
-            this.carId = car.getId();
-        }
-    }
-
-    public Insurance getInsurance() {
-        return insurance;
-    }
-
-    public void setInsurance(Insurance insurance) {
-        this.insurance = insurance;
-        if (insurance != null) {
-            this.insuranceId = insurance.getId();
-        }
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Long getCarId() { return carId; }
+    public void setCarId(Long carId) { this.carId = carId; }
+    public Long getCustomerId() { return customerId; }
+    public void setCustomerId(Long customerId) { this.customerId = customerId; }
+    public Long getManagerId() { return managerId; }
+    public void setManagerId(Long managerId) { this.managerId = managerId; }
+    public String getInsuranceNumber() { return insuranceNumber; }
+    public void setInsuranceNumber(String insuranceNumber) { this.insuranceNumber = insuranceNumber; }
+    public boolean isNoInsurance() { return noInsurance; }
+    public void setNoInsurance(boolean noInsurance) { this.noInsurance = noInsurance; }
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    public LocalDate getDealDate() { return dealDate; }
+    public void setDealDate(LocalDate dealDate) { this.dealDate = dealDate; }
+    public List<DealEquipment> getEquipment() { return equipment; }
+    public void setEquipment(List<DealEquipment> equipment) { this.equipment = equipment; }
+    public Car getCar() { return car; }
+    public void setCar(Car car) { this.car = car; }
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
+    public User getManager() { return manager; }
+    public void setManager(User manager) { this.manager = manager; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 } 

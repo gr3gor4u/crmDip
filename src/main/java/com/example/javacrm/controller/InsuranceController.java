@@ -154,7 +154,7 @@ public class InsuranceController {
         Insurance insurance = new Insurance();
         boolean okClicked = showInsuranceDialog(insurance);
         if (okClicked) {
-            insuranceService.addInsurance(insurance);
+            insuranceService.createInsurance(insurance);
             refreshInsuranceList();
         }
     }

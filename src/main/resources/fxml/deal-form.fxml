@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.javacrm.controller.DealController" spacing="10">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <GridPane vgap="10" hgap="10">
+        <!-- Основная информация -->
+        <Label text="Клиент:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <ComboBox fx:id="customerComboBox" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="300"/>
+
+        <Label text="VIN автомобиля:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="carVinField" GridPane.columnIndex="1" GridPane.rowIndex="1" prefWidth="300"/>
+
+        <Label text="Менеджер:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <ComboBox fx:id="managerComboBox" GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="300"/>
+
+        <!-- Страховка -->
+        <Label text="Страховка:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <HBox spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <TextField fx:id="insuranceNumberField" prefWidth="200"/>
+            <CheckBox fx:id="noInsuranceCheckBox" text="Без страховки"/>
+        </HBox>
+
+        <!-- Оборудование -->
+        <Label text="Оборудование:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <HBox spacing="10">
+                <ComboBox fx:id="equipmentComboBox" prefWidth="200"/>
+                <TextField fx:id="equipmentQuantityField" prefWidth="80" promptText="Кол-во"/>
+                <Button fx:id="addEquipmentButton" text="Добавить" onAction="#handleAddEquipment"/>
+                <CheckBox fx:id="noEquipmentCheckBox" text="Без оборудования"/>
+            </HBox>
+            <TableView fx:id="equipmentTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="equipmentNameColumn" text="Название" prefWidth="200"/>
+                    <TableColumn fx:id="quantityColumn" text="Количество" prefWidth="100"/>
+                    <TableColumn fx:id="priceColumn" text="Цена" prefWidth="100"/>
+                    <TableColumn fx:id="editColumn" text="Действия" prefWidth="120"/>
+                </columns>
+            </TableView>
+        </VBox>
+
+        <!-- Общая информация -->
+        <Label text="Общая стоимость:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <TextField fx:id="totalPriceField" GridPane.columnIndex="1" GridPane.rowIndex="5" editable="false"/>
+
+        <Label text="Статус:" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <ComboBox fx:id="statusComboBox" GridPane.columnIndex="1" GridPane.rowIndex="6" prefWidth="300"/>
+
+        <Label text="Дата сделки:" GridPane.columnIndex="0" GridPane.rowIndex="7"/>
+        <DatePicker fx:id="dealDatePicker" GridPane.columnIndex="1" GridPane.rowIndex="7"/>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Сохранить" onAction="#handleSave" defaultButton="true"/>
+        <Button text="Отмена" onAction="#handleCancel" cancelButton="true"/>
+    </HBox>
+</VBox> 

@@ -14,6 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
 import javafx.scene.paint.Color;
 import javafx.scene.control.cell.CheckBoxTableCell;
+import java.math.BigDecimal;
 
 public class EquipmentController {
     @FXML
@@ -23,7 +24,7 @@ public class EquipmentController {
     @FXML
     private TableColumn<AdditionalEquipment, String> nameColumn;
     @FXML
-    private TableColumn<AdditionalEquipment, Double> priceColumn;
+    private TableColumn<AdditionalEquipment, BigDecimal> priceColumn;
     @FXML
     private TableColumn<AdditionalEquipment, Integer> quantityColumn;
     @FXML
@@ -109,7 +110,7 @@ public class EquipmentController {
     
     private void populateFields(AdditionalEquipment equipment) {
         nameField.setText(equipment.getName());
-        priceField.setText(String.valueOf(equipment.getPrice()));
+        priceField.setText(equipment.getPrice() != null ? equipment.getPrice().toString() : "");
         quantityField.setText(String.valueOf(equipment.getQuantity()));
     }
     
@@ -125,11 +126,11 @@ public class EquipmentController {
         try {
             AdditionalEquipment equipment = new AdditionalEquipment();
             equipment.setName(nameField.getText());
-            equipment.setPrice(Double.parseDouble(priceField.getText()));
+            equipment.setPrice(new BigDecimal(priceField.getText()));
             equipment.setQuantity(Integer.parseInt(quantityField.getText()));
             equipment.setAvailable(equipment.getQuantity() > 0);
             
-            equipmentService.addEquipment(equipment);
+            equipmentService.createEquipment(equipment.getName(), equipment.getPrice(), equipment.getQuantity());
             refreshTable();
             clearFields();
         } catch (NumberFormatException e) {
@@ -154,11 +155,12 @@ public class EquipmentController {
         
         try {
             selectedEquipment.setName(nameField.getText());
-            selectedEquipment.setPrice(Double.parseDouble(priceField.getText()));
+            selectedEquipment.setPrice(new BigDecimal(priceField.getText()));
             selectedEquipment.setQuantity(Integer.parseInt(quantityField.getText()));
             selectedEquipment.setAvailable(selectedEquipment.getQuantity() > 0);
             
-            equipmentService.updateEquipment(selectedEquipment);
+            equipmentService.updateEquipment(selectedEquipment.getId(), selectedEquipment.getName(), selectedEquipment.getPrice(), selectedEquipment.getQuantity());
+            
             refreshTable();
             clearFields();
         } catch (NumberFormatException e) {
@@ -191,13 +193,30 @@ public class EquipmentController {
     
     @FXML
     private void handleSearch() {
-        String id = idFilterField.getText().trim();
+        String idText = idFilterField.getText().trim();
         String name = nameFilterField.getText().trim();
         String minPrice = minPriceFilterField.getText().trim();
         String maxPrice = maxPriceFilterField.getText().trim();
 
         equipmentTable.getItems().clear();
-        equipmentTable.getItems().addAll(equipmentService.searchEquipment(id, name, minPrice, maxPrice));
+        BigDecimal min = null;
+        BigDecimal max = null;
+        try { min = new BigDecimal(minPrice); } catch (Exception ignored) {}
+        try { max = new BigDecimal(maxPrice); } catch (Exception ignored) {}
+
+        if (!idText.isEmpty()) {
+            try {
+                Long id = Long.parseLong(idText);
+                AdditionalEquipment equipment = equipmentService.getEquipmentById(id);
+                if (equipment != null) {
+                    equipmentTable.getItems().add(equipment);
+                }
+            } catch (NumberFormatException e) {
+                showError("Некорректный формат ID");
+            }
+        } else {
+            equipmentTable.getItems().addAll(equipmentService.searchEquipment(name, min, max));
+        }
     }
     
     @FXML
