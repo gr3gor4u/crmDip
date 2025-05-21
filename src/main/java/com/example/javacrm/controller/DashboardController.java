@@ -30,6 +30,16 @@ import java.util.List;
 import java.util.Map;
 import javafx.scene.Scene;
 import com.example.javacrm.service.UserService;
+import com.example.javacrm.service.DealService;
+import com.example.javacrm.model.Deal;
+import com.example.javacrm.model.Car;
+import com.example.javacrm.model.Customer;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.scene.control.ProgressIndicator;
 
 public class DashboardController {
     @FXML private Label totalCustomersLabel;
@@ -41,14 +51,17 @@ public class DashboardController {
 
     private CustomerService customerService;
     private CarService carService;
+    private DealService dealService;
     private User currentUser;
     private Stage stage;
+    private ProgressIndicator refreshIndicator;
 
     @FXML
     public void initialize() {
         try {
             customerService = new CustomerService(DatabaseService.getInstance());
             carService = new CarService(DatabaseService.getInstance());
+            dealService = new DealService(DatabaseService.getInstance(), customerService, carService, null, null);
             updateStatistics();
             updateWelcomeLabel();
         } catch (Exception e) {
@@ -64,10 +77,13 @@ public class DashboardController {
             int availableCars = (int) carService.getAllCars().stream()
                 .filter(car -> "AVAILABLE".equals(car.getStatus()))
                 .count();
+            int totalDeals = dealService.getAllDeals().size();
 
             totalCustomersLabel.setText(String.valueOf(totalCustomers));
             totalCarsLabel.setText(String.valueOf(totalCars));
             availableCarsLabel.setText(String.valueOf(availableCars));
+            // Если есть отдельный лейбл для сделок, можно добавить:
+            // totalDealsLabel.setText(String.valueOf(totalDeals));
         } catch (Exception e) {
             e.printStackTrace();
             showError("Ошибка обновления статистики", "Не удалось обновить статистику: " + e.getMessage());
@@ -77,6 +93,7 @@ public class DashboardController {
     public void setUser(User user) {
         this.currentUser = user;
         updateWelcomeLabel();
+        showDashboard();
     }
 
     public void setStage(Stage stage) {
@@ -118,10 +135,31 @@ public class DashboardController {
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
         
         Button refreshButton = new Button("Обновить");
-        refreshButton.setOnAction(e -> refreshDashboard());
+        refreshIndicator = new ProgressIndicator();
+        refreshIndicator.setPrefSize(24, 24);
+        refreshIndicator.setVisible(false);
+        refreshButton.setOnAction(e -> startRefreshAnimation());
         
-        headerBox.getChildren().addAll(dashboardTitle, spacer, refreshButton);
+        headerBox.getChildren().addAll(dashboardTitle, spacer, refreshButton, refreshIndicator);
         return headerBox;
+    }
+
+    private void startRefreshAnimation() {
+        refreshIndicator.setVisible(true);
+        Task<Void> refreshTask = new Task<>() {
+            @Override
+            protected Void call() {
+                // Имитация задержки для анимации (можно убрать или уменьшить)
+                try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+                Platform.runLater(() -> {
+                    updateStatistics();
+                    showDashboard();
+                    refreshIndicator.setVisible(false);
+                });
+                return null;
+            }
+        };
+        new Thread(refreshTask).start();
     }
 
     private GridPane createStatisticsGrid() {
@@ -129,7 +167,6 @@ public class DashboardController {
         grid.setHgap(20);
         grid.setVgap(20);
         
-        // Статистика клиентов
         VBox customersCard = new VBox();
         customersCard.getStyleClass().add("card");
         Label customersTitle = new Label("Всего клиентов");
@@ -139,17 +176,16 @@ public class DashboardController {
         customersCard.getChildren().addAll(customersTitle, customersValue);
         grid.add(customersCard, 0, 0);
         
-        // Статистика сделок
         VBox dealsCard = new VBox();
         dealsCard.getStyleClass().add("card");
         Label dealsTitle = new Label("Всего сделок");
         dealsTitle.getStyleClass().add("card-title");
-        Label dealsValue = new Label("0"); // TODO: Добавить подсчет сделок
+        int totalDeals = dealService.getAllDeals().size();
+        Label dealsValue = new Label(String.valueOf(totalDeals));
         dealsValue.getStyleClass().add("card-value");
         dealsCard.getChildren().addAll(dealsTitle, dealsValue);
         grid.add(dealsCard, 1, 0);
         
-        // Статистика автомобилей
         VBox carsCard = new VBox();
         carsCard.getStyleClass().add("card");
         Label carsTitle = new Label("Всего автомобилей");
@@ -167,15 +203,47 @@ public class DashboardController {
         Label title = new Label("Последние сделки");
         title.getStyleClass().add("section-title");
         
-        TableView<Object> table = new TableView<>();
-        table.getColumns().addAll(
-            createTableColumn("ID", "id", 50),
-            createTableColumn("Клиент", "customer", 200),
-            createTableColumn("Автомобиль", "car", 200),
-            createTableColumn("Сумма", "amount", 100),
-            createTableColumn("Дата", "date", 150)
-        );
-        
+        TableView<Deal> table = new TableView<>();
+        TableColumn<Deal, Long> idCol = new TableColumn<>("ID");
+        idCol.setPrefWidth(50);
+        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<Deal, String> customerCol = new TableColumn<>("Клиент");
+        customerCol.setPrefWidth(200);
+        customerCol.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            Customer c = deal.getCustomer();
+            return new javafx.beans.property.SimpleStringProperty(
+                c != null ? c.getLastName() + " " + c.getFirstName() : "");
+        });
+        TableColumn<Deal, String> carCol = new TableColumn<>("Автомобиль");
+        carCol.setPrefWidth(200);
+        carCol.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            Car car = deal.getCar();
+            return new javafx.beans.property.SimpleStringProperty(
+                car != null ? car.getBrand() + " " + car.getModel() : "");
+        });
+        TableColumn<Deal, String> amountCol = new TableColumn<>("Сумма");
+        amountCol.setPrefWidth(100);
+        amountCol.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            return new javafx.beans.property.SimpleStringProperty(
+                deal.getTotalPrice() != null ? deal.getTotalPrice().toString() : "");
+        });
+        TableColumn<Deal, String> dateCol = new TableColumn<>("Дата");
+        dateCol.setPrefWidth(150);
+        dateCol.setCellValueFactory(cellData -> {
+            Deal deal = cellData.getValue();
+            return new javafx.beans.property.SimpleStringProperty(
+                deal.getDealDate() != null ? deal.getDealDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) : "");
+        });
+        table.getColumns().addAll(idCol, customerCol, carCol, amountCol, dateCol);
+        // Показываем только 10 последних сделок
+        List<Deal> lastDeals = dealService.getAllDeals().stream()
+            .sorted(Comparator.comparing(Deal::getDealDate, Comparator.nullsLast(Comparator.reverseOrder())))
+            .limit(10)
+            .collect(Collectors.toList());
+        table.setItems(FXCollections.observableArrayList(lastDeals));
         section.getChildren().addAll(title, table);
         return section;
     }
@@ -184,22 +252,26 @@ public class DashboardController {
         VBox section = new VBox(10);
         Label title = new Label("График продаж");
         title.getStyleClass().add("section-title");
-        
         LineChart<String, Number> chart = new LineChart<>(
             new CategoryAxis(),
             new NumberAxis()
         );
         chart.setTitle("Продажи по месяцам");
-        
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        series.setName("Сделки");
+        // Группируем сделки по месяцам
+        Map<String, Long> salesByMonth = dealService.getAllDeals().stream()
+            .filter(d -> d.getDealDate() != null)
+            .collect(Collectors.groupingBy(
+                d -> d.getDealDate().format(DateTimeFormatter.ofPattern("MM.yyyy")),
+                Collectors.counting()
+            ));
+        salesByMonth.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEach(entry -> series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue())));
+        chart.getData().add(series);
         section.getChildren().addAll(title, chart);
         return section;
-    }
-
-    private <T> TableColumn<T, ?> createTableColumn(String title, String property, double width) {
-        TableColumn<T, ?> column = new TableColumn<>(title);
-        column.setPrefWidth(width);
-        column.setCellValueFactory(new PropertyValueFactory<>(property));
-        return column;
     }
 
     @FXML
